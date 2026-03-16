@@ -28,6 +28,24 @@ const routes = [
     redirect: '/admin/dashboard',
     children: [
       {
+        path: 'churches',
+        name: 'ChurchManagement',
+        component: () => import('@/views/admin/ChurchDirectory.vue'),
+        meta: { 
+          title: 'Church Directory',
+          icon: 'mdi-office-building-cog',
+        },
+      },
+      {
+        path: 'churches/register',
+        name: 'RegisterChurch',
+        component: () => import('@/views/admin/ChurchRegistration.vue'),
+        meta: { 
+          title: 'Register New Church',
+          showInNav: false,
+        },
+      },
+      {
         path: 'dashboard',
         name: 'AdminDashboard',
         component: () => import('@/views/admin/Dashboard.vue'),

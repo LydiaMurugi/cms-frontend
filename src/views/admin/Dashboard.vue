@@ -8,7 +8,7 @@
 
     <!-- KPI Metrics Cards - Flat Design -->
     <v-row dense>
-      <v-col cols="12" sm="6" lg="3">
+      <v-col v-if="hasPermission('manage_members')" cols="12" sm="6" lg="3">
         <BaseCard elevation="0" rounded="md" class="border-thin bg-white mb-2" no-padding>
           <div class="d-flex align-center pa-4">
             <v-avatar color="primary-lighten-5" size="48" rounded="md" class="mr-3">
@@ -24,7 +24,7 @@
         </BaseCard>
       </v-col>
 
-      <v-col cols="12" sm="6" lg="3">
+      <v-col v-if="hasPermission('manage_projects')" cols="12" sm="6" lg="3">
         <BaseCard elevation="0" rounded="md" class="border-thin bg-white mb-2" no-padding>
           <div class="d-flex align-center pa-4">
             <v-avatar color="secondary-lighten-5" size="48" rounded="md" class="mr-3">
@@ -40,7 +40,7 @@
         </BaseCard>
       </v-col>
 
-      <v-col cols="12" sm="6" lg="3">
+      <v-col v-if="hasPermission('manage_finances')" cols="12" sm="6" lg="3">
         <BaseCard elevation="0" rounded="md" class="border-thin bg-white mb-2" no-padding>
           <div class="d-flex align-center pa-4">
             <v-avatar color="success-lighten-5" size="48" rounded="md" class="mr-3">
@@ -56,7 +56,7 @@
         </BaseCard>
       </v-col>
 
-      <v-col cols="12" sm="6" lg="3">
+      <v-col v-if="hasPermission('manage_tasks')" cols="12" sm="6" lg="3">
         <BaseCard elevation="0" rounded="md" class="border-thin bg-white mb-2" no-padding>
           <div class="d-flex align-center pa-4">
             <v-avatar color="warning-lighten-5" size="48" rounded="md" class="mr-3">
@@ -149,16 +149,20 @@ import { useProjectStore } from '@/stores/projectStore'
 import { useFinanceStore } from '@/stores/financeStore'
 import { useDutyStore } from '@/stores/dutyStore'
 import { useDashboardData } from '@/composables/useDashboardData'
+import { usePermissions } from '@/composables/usePermissions'
 
 const memberStore = useMemberStore()
 const projectStore = useProjectStore()
 const financeStore = useFinanceStore()
 const dutyStore = useDutyStore()
+const { hasPermission } = usePermissions()
 
 const { recentActivities } = useDashboardData()
 
 onMounted(() => {
-  dutyStore.fetchDuties()
+  if (hasPermission('manage_tasks')) {
+    dutyStore.fetchDuties()
+  }
 })
 </script>
 

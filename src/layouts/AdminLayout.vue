@@ -103,26 +103,36 @@ import { ref, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/authStore'
 import { useNotificationStore } from '@/stores/notificationStore'
+import { usePermissions } from '@/composables/usePermissions'
 
 const drawer = ref(true)
 const router = useRouter()
 const route = useRoute()
 const auth = useAuthStore()
 const notificationStore = useNotificationStore()
+const { hasPermission, role } = usePermissions()
 
 const currentRouteTitle = computed(() => route.meta.title || 'Admin')
 
-const navItems = [
-  { title: 'Dashboard', icon: 'mdi-view-dashboard', path: '/admin/dashboard' },
-  { title: 'Tasks', icon: 'mdi-clipboard-check', path: '/admin/tasks' },
-  { title: 'Member Directory', icon: 'mdi-account-group', path: '/admin/members' },
-  { title: 'Finances', icon: 'mdi-cash-register', path: '/admin/finances' },
-  { title: 'Project Board', icon: 'mdi-view-column', path: '/admin/projects' },
-  { title: 'Resources', icon: 'mdi-cloud-upload', path: '/admin/resources' },
-  { title: 'Reports', icon: 'mdi-chart-areaspline', path: '/admin/reports' },
-  { title: 'Communication', icon: 'mdi-chat-processing', path: '/admin/communication' },
-  { title: 'Settings', icon: 'mdi-cog', path: '/admin/settings' },
+const allNavItems = [
+  { title: 'Dashboard', icon: 'mdi-view-dashboard', path: '/admin/dashboard', permission: 'view_dashboard' },
+  { title: 'Churches', icon: 'mdi-office-building-cog', path: '/admin/churches', permission: 'manage_churches' },
+  { title: 'Tasks', icon: 'mdi-clipboard-check', path: '/admin/tasks', permission: 'manage_tasks' },
+  { title: 'Member Directory', icon: 'mdi-account-group', path: '/admin/members', permission: 'manage_members' },
+  { title: 'Finances', icon: 'mdi-cash-register', path: '/admin/finances', permission: 'manage_finances' },
+  { title: 'Project Board', icon: 'mdi-view-column', path: '/admin/projects', permission: 'manage_projects' },
+  { title: 'Resources', icon: 'mdi-cloud-upload', path: '/admin/resources', permission: 'manage_resources' },
+  { title: 'Reports', icon: 'mdi-chart-areaspline', path: '/admin/reports', permission: 'view_reports' },
+  { title: 'Communication', icon: 'mdi-chat-processing', path: '/admin/communication', permission: 'manage_communications' },
+  { title: 'Settings', icon: 'mdi-cog', path: '/admin/settings', permission: 'manage_settings' },
 ]
+
+const navItems = computed(() => {
+  return allNavItems.filter(item => {
+    if (!item.permission) return true
+    return hasPermission(item.permission)
+  })
+})
 
 const handleLogout = () => {
   auth.logout()

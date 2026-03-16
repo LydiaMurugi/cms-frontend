@@ -44,19 +44,30 @@
                 <BaseInput v-model="formData.adminEmail" label="Admin Email" placeholder="admin@church.com" type="email" :rules="[rules.required, rules.email]" />
               </v-col>
               <v-col cols="12">
-                <div class="pa-4 bg-primary-lighten-5 rounded-md border-thin border-dashed mb-2">
-                  <div class="text-caption text-primary font-weight-bold mb-1">Temporary Password (OTP)</div>
-                  <div class="text-h6 font-weight-bold">{{ tempPassword }}</div>
-                  <p class="text-tiny text-medium-emphasis mt-1">The admin will be forced to change this upon first login.</p>
-                </div>
-                <BaseButton variant="text" size="x-small" color="primary" prepend-icon="mdi-refresh" @click="generateOTP">Regenerate</BaseButton>
-              </v-col>
-            </v-row>
-          </v-form>
-          <div class="d-flex justify-space-between mt-6">
-            <BaseButton variant="text" @click="step = 1">Back</BaseButton>
-            <BaseButton @click="handleRegistration" :disabled="!isAdminValid" :loading="loading">Register Church</BaseButton>
-          </div>
+              <v-alert
+                v-if="errorMsg"
+                type="error"
+                variant="tonal"
+                density="compact"
+                rounded="md"
+                class="mb-4"
+              >
+                {{ errorMsg }}
+              </v-alert>
+
+              <div class="pa-4 bg-primary-lighten-5 rounded-md border-thin border-dashed mb-2">
+                <div class="text-caption text-primary font-weight-bold mb-1">Temporary Password (OTP)</div>
+                <div class="text-h6 font-weight-bold">{{ tempPassword }}</div>
+                <p class="text-tiny text-medium-emphasis mt-1">The admin will be forced to change this upon first login.</p>
+              </div>
+              <BaseButton variant="text" size="x-small" color="primary" prepend-icon="mdi-refresh" @click="generateOTP">Regenerate</BaseButton>
+            </v-col>
+          </v-row>
+        </v-form>
+        <div class="d-flex justify-space-between mt-6">
+          <BaseButton variant="text" @click="step = 1">Back</BaseButton>
+          <BaseButton @click="handleRegistration" :disabled="!isAdminValid" :loading="churchStore.loading">Register Church</BaseButton>
+        </div>
         </div>
       </template>
 
@@ -78,13 +89,14 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
-import api from '@/plugins/axios'
+import { useChurchStore } from '@/stores/churchStore'
 
+const churchStore = useChurchStore()
 const step = ref(1)
-const loading = ref(false)
 const isChurchValid = ref(false)
 const isAdminValid = ref(false)
 const tempPassword = ref('')
+const errorMsg = ref('')
 
 const formData = reactive({
   churchName: '',
@@ -113,24 +125,19 @@ onMounted(() => {
 })
 
 const handleRegistration = async () => {
-  loading.value = true
-  try {
-    // In a real app, this sends to the backend multi-tenant registration endpoint
-    await api.post('/tenants/register', {
-      ...formData,
-      initialPassword: tempPassword.value
-    })
-    
-    // Simulate success for now if backend not ready
-    setTimeout(() => {
-      step.value = 3
-      loading.value = false
-    }, 1500)
-  } catch (error) {
-    console.error(error)
-    // Fallback for demo
+  errorMsg.value = ''
+  
+  const payload = {
+    ...formData,
+    initialPassword: tempPassword.value
+  }
+
+  const result = await churchStore.registerChurch(payload)
+  
+  if (result.success) {
     step.value = 3
-    loading.value = false
+  } else {
+    errorMsg.value = result.message || 'Failed to register church'
   }
 }
 </script>

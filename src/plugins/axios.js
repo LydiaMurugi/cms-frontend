@@ -10,8 +10,13 @@ api.interceptors.request.use((config) => {
   const stored = localStorage.getItem("churchAuth")
 
   if (stored) {
-    const { token } = JSON.parse(stored)
+    const { token, user } = JSON.parse(stored)
     config.headers.Authorization = `Bearer ${token}`
+    
+    // Add Tenant ID to headers if available
+    if (user && user.tenantId) {
+      config.headers['X-Tenant-Id'] = user.tenantId
+    }
   }
 
   return config

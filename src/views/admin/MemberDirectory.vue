@@ -7,6 +7,7 @@
         <p class="text-caption text-grey-darken-1">Manage and organize your congregation groups</p>
       </div>
       <BaseButton
+        v-if="hasPermission('manage_members')"
         color="primary"
         prepend-icon="mdi-plus"
         size="small"
@@ -105,7 +106,7 @@
         </template>
 
         <template #item.actions="{ item }">
-          <div class="d-flex gap-1">
+          <div v-if="hasPermission('manage_members')" class="d-flex gap-1">
             <BaseButton
               icon="mdi-pencil-outline"
               variant="text"
@@ -120,6 +121,7 @@
               size="x-small"
             />
           </div>
+          <div v-else class="text-caption text-grey italic">View only</div>
         </template>
 
         <template #no-data>
@@ -145,12 +147,14 @@ import { onMounted } from 'vue'
 import { useMemberStore } from '@/stores/memberStore'
 import { headers } from '@/constants/memberTableHeaders'
 import { useMemberFilters } from '@/composables/useMemberFilters'
+import { usePermissions } from '@/composables/usePermissions'
 
 const memberStore = useMemberStore()
+const { hasPermission } = usePermissions()
 
 const {
   searchQuery,
-  selectedGroup,
+...
   statusFilter,
   showAdvancedFilters,
   filteredMembers,

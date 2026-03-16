@@ -105,9 +105,9 @@ const handleLogin = async () => {
   }
 
   // Role-based redirection
-  if (authStore.role === 'admin' || authStore.role === 'leader') {
+  if (authStore.isAdmin) {
     router.push('/admin/dashboard')
-  } else if (authStore.role === 'member') {
+  } else if (authStore.isMember) {
     router.push('/member/home')
   } else {
     // Fallback safety
