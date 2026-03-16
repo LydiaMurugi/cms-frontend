@@ -1,0 +1,10 @@
+/* spacing helpers */
+.m-0   { margin: 0 !important; }
+.mt-1  { margin-top: 4px !important; }
+.mb-1  { margin-bottom: 4px !important; }
+.p-0   { padding: 0 !important; }
+/* …add whatever helpers you need… */
+
+/* typography overrides */
+.text-uppercase { text-transform: uppercase !important; }
+.text-bold      { font-weight: 700 !important; }

@@ -1,8 +1,8 @@
 import { ref, computed } from 'vue'
-import { useProjectStore } from '@/stores/projectStore'
+import { useProgramStore } from '@/stores/projectStore'
 
 export function useMemberEvents() {
-  const projectStore = useProjectStore()
+  const programStore = useProgramStore()
 
   const selectedDate = ref(new Date())
 
@@ -16,7 +16,7 @@ export function useMemberEvents() {
  const dailyEvents = computed(() => {
     const selected = selectedDate.value.toISOString().split('T')[0]
 
-    return projectStore.programs.filter(p => p.date === selected)
+    return programStore.programs.filter(p => p.date === selected)
   })
 
   return {

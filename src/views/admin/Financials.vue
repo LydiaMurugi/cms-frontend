@@ -39,7 +39,7 @@
     </v-row>
 
     <!-- ================= Ledger Table ================= -->
-    <v-card elevation="2" class="rounded-lg">
+    <v-card elevation="0" class="rounded-md border-thin">
       <v-data-table
         :headers="headers"
         :items="financeStore.titheRecords"
@@ -241,3 +241,9 @@ const handleAnnualReport = async () => {
   }
 }
 </script>
+
+<style scoped>
+.border-thin {
+  border: 1px solid rgba(121, 85, 72, 0.1) !important;
+}
+</style>

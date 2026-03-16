@@ -64,11 +64,11 @@ const routes = [
         },
       },
       {
-        path: 'analytics',
-        name: 'FinancialAnalytics',
-        component: () => import('@/views/admin/FinancialAnalytics.vue'),
+        path: 'reports',
+        name: 'FinancialReports',
+        component: () => import('@/views/admin/FinancialReports.vue'),
         meta: { 
-          title: 'Financial Analytics',
+          title: 'Financial Reports',
           icon: 'mdi-chart-line',
         },
       },
@@ -128,6 +128,35 @@ const routes = [
         meta: { 
           title: 'Settings',
           icon: 'mdi-cog',
+        },
+      },
+      {
+        path: 'profile',
+        name: 'AdminProfile',
+        component: () => import('@/views/member/Profile.vue'),
+        meta: { 
+          title: 'My Profile',
+          requiresAuth: true,
+          requiresAdmin: true,
+        },
+      },
+      {
+        path: 'notifications',
+        name: 'AdminNotifications',
+        component: () => import('@/views/member/Notifications.vue'),
+        meta: { 
+          title: 'Notifications',
+          requiresAuth: true,
+          requiresAdmin: true,
+        },
+      },
+      {
+        path: 'style-guide',
+        name: 'AdminStyleGuide',
+        component: () => import('@/views/admin/StyleGuide.vue'),
+        meta: { 
+          title: 'Style Guide',
+          icon: 'mdi-palette',
         },
       },
     ],

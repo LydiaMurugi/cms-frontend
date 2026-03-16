@@ -1,77 +1,85 @@
 <template>
-  <v-container class="pa-4 bg-background">
+  <div class="giving-history-view">
+    <!-- Header -->
+    <div class="d-flex align-center mb-6 px-2">
+      <BaseButton icon="mdi-arrow-left" variant="text" color="primary" size="small" rounded="md" @click="router.back()" class="mr-2" />
+      <h1 class="text-h5 font-weight-bold text-primary">Giving History</h1>
+    </div>
 
-    <v-row class="mb-2" align="center">
-      <v-col cols="auto">
-        <v-btn icon="mdi-arrow-left" variant="text" color="primary" @click="router.back()" />
-      </v-col>
-      <v-col>
-        <h1 class="text-h5 font-weight-bold text-primary">Giving History</h1>
-      </v-col>
-    </v-row>
-
-    <v-card color="primary" class="rounded-xl mb-6 pa-6 text-white" elevation="4">
-      <div class="d-flex justify-space-between align-center mb-4">
+    <!-- Summary Card - Flat Scroll Style -->
+    <BaseCard elevation="0" rounded="md" color="primary" class="mb-6 modern-service-card">
+      <div class="d-flex justify-space-between align-center pa-6">
         <div>
-          <div class="text-overline opacity-80">2024 Total Contributions</div>
-          <div class="text-h4 font-weight-bold">${{ annualTotal.toLocaleString() }}</div>
+          <div class="text-overline text-white-70">2024 Total Contributions</div>
+          <div class="text-h4 font-weight-bold text-white">${{ annualTotal.toLocaleString() }}</div>
         </div>
-        <v-icon icon="mdi-chart-bell-curve-cumulative" size="48" class="opacity-40" />
+        <v-icon icon="mdi-chart-bell-curve-cumulative" size="48" color="white" class="opacity-40" />
       </div>
-    </v-card>
+    </BaseCard>
 
-    <v-text-field
-      v-model="search"
-      prepend-inner-icon="mdi-magnify"
-      label="Search by category or date..."
-      variant="outlined"
-      rounded="pill"
-      hide-details
-      class="bg-white mb-4"
-    />
-    <v-card v-if="filteredRecords.length" class="rounded-xl" elevation="2">
-      <v-list class="pa-0">
-        <template v-for="(record, index) in filteredRecords" :key="record.id">
+    <!-- Search -->
+    <div class="px-2 mb-4">
+      <BaseInput
+        v-model="search"
+        prepend-inner-icon="mdi-magnify"
+        placeholder="Search by category or date..."
+        hide-details
+      />
+    </div>
 
-          <v-list-item class="py-3 px-4">
-
-            <template #prepend>
-              <v-avatar
+    <!-- History List -->
+    <div v-if="filteredRecords.length">
+      <BaseCard
+        v-for="record in filteredRecords"
+        :key="record.id"
+        elevation="0"
+        rounded="md"
+        class="mb-2 border-thin bg-white no-padding"
+      >
+        <v-list-item class="py-3 px-4">
+          <template #prepend>
+            <v-avatar
+              :color="(CATEGORY_COLORS[record.category] || 'info') + '-lighten-5'"
+              rounded="md"
+              size="40"
+              class="mr-3 border-thin"
+            >
+              <v-icon 
+                :icon="CATEGORY_ICONS[record.category] || 'mdi-cash'" 
                 :color="CATEGORY_COLORS[record.category] || 'info'"
-                variant="tonal"
-              >
-                <v-icon :icon="CATEGORY_ICONS[record.category] || 'mdi-cash'" />
-              </v-avatar>
-            </template>
+                size="20"
+              />
+            </v-avatar>
+          </template>
 
-            <v-list-item-title class="font-weight-bold">
-              {{ record.category }}
-            </v-list-item-title>
+          <v-list-item-title class="text-subtitle-2 font-weight-bold">
+            {{ record.category }}
+          </v-list-item-title>
 
-            <v-list-item-subtitle>
-              {{ record.date }} • {{ record.method || 'Digital' }}
-            </v-list-item-subtitle>
+          <v-list-item-subtitle class="text-caption">
+            {{ record.date }} • {{ record.method || 'Digital' }}
+          </v-list-item-subtitle>
 
-            <template #append>
-              <div class="text-success font-weight-bold">
-                +${{ record.amount.toLocaleString() }}
-              </div>
-            </template>
+          <template #append>
+            <div class="text-success font-weight-bold">
+              +${{ record.amount.toLocaleString() }}
+            </div>
+          </template>
+        </v-list-item>
+      </BaseCard>
+    </div>
 
-          </v-list-item>
-
-          <v-divider v-if="index < filteredRecords.length - 1" />
-
-        </template>
-      </v-list>
-    </v-card>
-    <v-card v-else class="rounded-xl pa-10 text-center" variant="outlined">
-      <v-icon icon="mdi-heart-outline" size="64" />
-      <div class="text-h6 mt-2">No records found</div>
-      <v-btn to="/member/contribute" variant="text">Start your first gift</v-btn>
-    </v-card>
-
-  </v-container>
+    <!-- Empty State -->
+    <template v-else>
+      <BaseCard elevation="0" rounded="md" class="pa-10 text-center border-thin bg-white">
+        <v-icon icon="mdi-heart-outline" size="48" color="grey-lighten-2" class="mb-3" />
+        <h3 class="text-subtitle-1 font-weight-bold mb-1">No records found</h3>
+        <BaseButton to="/member/contribute" variant="text" size="small" color="primary">
+          Start your first gift
+        </BaseButton>
+      </BaseCard>
+    </template>
+  </div>
 </template>
 
 <script setup>
@@ -104,6 +112,22 @@ const annualTotal = computed(() =>
 </script>
 
 <style scoped>
-.opacity-80 { opacity: .8 }
+.giving-history-view {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.modern-service-card {
+  background: linear-gradient(135deg, #5D4037 0%, #795548 100%);
+}
+
+.text-white-70 {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.border-thin {
+  border: 1px solid rgba(121, 85, 72, 0.1) !important;
+}
+
 .opacity-40 { opacity: .4 }
 </style>

@@ -1,46 +1,40 @@
 <template>
-  <v-container fluid class="fill-height bg-grey-lighten-4">
+  <v-container fluid class="fill-height bg-background">
     <v-row justify="center">
       <v-col cols="12" sm="8" md="4" lg="3">
         <!-- Brand -->
         <div class="text-center mb-8">
-          <v-avatar color="primary" size="80" class="elevation-4 mb-4">
+          <v-avatar color="primary" size="80" rounded="md" class="mb-4">
             <v-icon icon="mdi-church" size="48" color="white" />
           </v-avatar>
           <h1 class="text-h4 font-weight-bold text-primary">
             Church MS
           </h1>
-          <p class="text-subtitle-1 text-grey-darken-1">
+          <p class="text-subtitle-1 text-grey-darken-2">
             Management System
           </p>
         </div>
 
-        <v-card elevation="8" class="pa-6 rounded-xl">
-          <v-card-title class="text-h5 font-weight-bold mb-4">
-            Login
-          </v-card-title>
-
+        <BaseCard rounded="md" class="pa-6 border-thin bg-surface" title="Login">
           <v-form @submit.prevent="handleLogin">
-            <v-text-field
+            <BaseInput
               v-model="email"
               label="Email Address"
               prepend-inner-icon="mdi-email-outline"
-              variant="outlined"
               placeholder="admin@church.com"
               type="email"
               required
-              class="mb-2"
+              persistent-placeholder
             />
 
-            <v-text-field
+            <BaseInput
               v-model="password"
               label="Password"
               prepend-inner-icon="mdi-lock-outline"
-              variant="outlined"
               placeholder="••••••••"
               type="password"
               required
-              class="mb-4"
+              persistent-placeholder
             />
 
             <v-alert
@@ -48,32 +42,34 @@
               type="error"
               variant="tonal"
               density="compact"
+              rounded="md"
               class="mb-4 text-caption"
             >
               {{ errorMsg }}
             </v-alert>
 
-            <v-btn
+            <BaseButton
               type="submit"
-              color="primary"
               size="large"
               block
-              elevation="2"
+              rounded="md"
               class="font-weight-bold"
               :loading="authStore.loading"
             >
               Sign In
-            </v-btn>
+            </BaseButton>
           </v-form>
 
-          <v-card-actions class="justify-center mt-4">
-            <v-btn variant="text" size="small" color="secondary">
-              Forgot Password?
-            </v-btn>
-          </v-card-actions>
-        </v-card>
+          <template #actions>
+            <div class="w-100 text-center">
+              <BaseButton variant="text" size="small" color="secondary" @click="handleForgotPassword">
+                Forgot Password?
+              </BaseButton>
+            </div>
+          </template>
+        </BaseCard>
 
-        <p class="text-center mt-8 text-caption text-grey">
+        <p class="text-center mt-8 text-caption text-grey-darken-1">
           © 2024 Your Church Name. All rights reserved.
         </p>
       </v-col>
@@ -92,6 +88,11 @@ const router = useRouter()
 const email = ref('')
 const password = ref('')
 const errorMsg = ref('')
+
+const handleForgotPassword = () => {
+  // Logic for password recovery
+  alert('Redirecting to password recovery...')
+}
 
 const handleLogin = async () => {
   errorMsg.value = ''
@@ -115,3 +116,12 @@ const handleLogin = async () => {
 }
 </script>
 
+<style scoped>
+.bg-background {
+  background-color: var(--color-background) !important;
+}
+
+.border-thin {
+  border: 1px solid rgba(121, 85, 72, 0.1) !important;
+}
+</style>

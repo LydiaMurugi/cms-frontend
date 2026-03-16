@@ -1,53 +1,48 @@
 <template>
-  <v-container fluid class="bg-background pa-6">
+  <div class="tasks-view">
     <!-- Header Section -->
-    <v-row class="mb-4" align="center">
-      <v-col cols="12" md="6">
-        <h1 class="text-h4 font-weight-bold text-primary">Duty Allocations</h1>
-        <p class="text-subtitle-1 text-grey">
-          Assign responsibilities and track leadership reports
-        </p>
-      </v-col>
+    <div class="d-flex align-center justify-space-between mb-6 px-2">
+      <div>
+        <h1 class="text-h5 font-weight-bold text-primary mb-1">Duty Allocations</h1>
+        <p class="text-caption text-grey-darken-1">Assign responsibilities and track leadership reports</p>
+      </div>
+      <BaseButton
+        color="primary"
+        prepend-icon="mdi-account-plus"
+        size="small"
+        rounded="md"
+        @click="showAssignDialog = true"
+      >
+        Assign Duty
+      </BaseButton>
+    </div>
 
-      <v-col cols="12" md="6" class="text-md-right">
-        <v-btn
-          color="primary"
-          prepend-icon="mdi-account-plus"
-          size="large"
-          @click="showAssignDialog = true"
-        >
-          Assign New Duty
-        </v-btn>
-      </v-col>
-    </v-row>
-
-    <!-- Filters -->
-    <v-card class="mb-6 rounded-lg" elevation="2">
-      <v-card-text>
+    <!-- Filters - Flat -->
+    <BaseCard class="mb-6 border-thin bg-white" elevation="0" rounded="md">
+      <div class="pa-4">
         <v-row dense align="center">
           <v-col cols="12" md="6">
-            <v-text-field
+            <BaseInput
               v-model="search"
               prepend-inner-icon="mdi-magnify"
-              label="Search duties or leaders..."
-              variant="outlined"
+              placeholder="Search duties or leaders..."
               hide-details
             />
           </v-col>
 
           <v-col cols="12" md="6">
-            <v-chip-group v-model="statusFilter" mandatory>
-              <v-chip value="All">All</v-chip>
-              <v-chip value="Pending" color="warning">Pending</v-chip>
-              <v-chip value="Submitted" color="success">Submitted</v-chip>
+            <v-chip-group v-model="statusFilter" mandatory class="justify-md-end">
+              <v-chip value="All" size="small" variant="outlined" filter>All</v-chip>
+              <v-chip value="Pending" size="small" color="warning" variant="tonal" filter>Pending</v-chip>
+              <v-chip value="Submitted" size="small" color="success" variant="tonal" filter>Submitted</v-chip>
             </v-chip-group>
           </v-col>
         </v-row>
-      </v-card-text>
-    </v-card>
+      </div>
+    </BaseCard>
 
-    <!-- Duties -->
-    <v-row>
+    <!-- Duties Grid -->
+    <v-row dense>
       <v-col
         v-for="duty in filteredDuties"
         :key="duty.id"
@@ -55,162 +50,133 @@
         md="6"
         lg="4"
       >
-        <v-card
-          elevation="2"
-          class="rounded-lg h-100 border-t-lg"
-          :style="{ borderTopColor: getStatusColor(duty.status) }"
+        <BaseCard
+          elevation="0"
+          rounded="md"
+          class="border-thin bg-white h-100 no-padding"
         >
-          <v-card-item>
-            <v-card-title>{{ duty.title }}</v-card-title>
-            <v-card-subtitle>
-              Due: {{ duty.date }}
-            </v-card-subtitle>
-          </v-card-item>
-
-          <v-divider />
-
-          <v-card-text>
-            <div class="text-overline text-grey mb-1">
-              Assigned Leader
-            </div>
-
-            <v-list-item class="px-0">
-              <v-list-item-title class="font-weight-bold">
-                {{ duty.assigned_name || 'Unassigned' }}
-              </v-list-item-title>
-              <v-list-item-subtitle>
-                {{ duty.category || 'No category' }}
-              </v-list-item-subtitle>
-            </v-list-item>
-
-            <div class="mt-4 d-flex align-center justify-space-between">
+          <div class="pa-4 border-t-priority" :style="{ borderTopColor: getStatusColor(duty.status) }">
+            <div class="d-flex justify-space-between align-start mb-2">
+              <div>
+                <h3 class="text-subtitle-1 font-weight-bold text-primary">{{ duty.title }}</h3>
+                <p class="text-tiny text-medium-emphasis uppercase-none">Due: {{ duty.date }}</p>
+              </div>
               <v-chip
                 :color="getStatusColor(duty.status)"
-                size="small"
+                size="x-small"
+                variant="flat"
+                rounded="md"
+                class="text-tiny font-weight-bold"
               >
                 {{ duty.status }}
               </v-chip>
+            </div>
 
-              <v-btn
+            <v-divider class="my-3 border-opacity-25" />
+
+            <div class="text-tiny font-weight-bold text-grey-darken-1 text-uppercase mb-2">
+              Assigned Leader
+            </div>
+
+            <div class="d-flex align-center">
+              <v-avatar color="primary-lighten-5" size="32" rounded="md" class="mr-3 border-thin">
+                <span class="text-tiny text-primary font-weight-bold">{{ (duty.assigned_name || '?').charAt(0) }}</span>
+              </v-avatar>
+              <div>
+                <p class="text-caption font-weight-bold mb-0">{{ duty.assigned_name || 'Unassigned' }}</p>
+                <p class="text-tiny text-medium-emphasis mb-0">{{ duty.category || 'General' }}</p>
+              </div>
+            </div>
+
+            <div class="mt-6 d-flex justify-end gap-2">
+              <BaseButton
                 v-if="duty.status === 'Pending'"
-                size="small"
+                size="x-small"
                 color="primary"
                 variant="tonal"
+                rounded="md"
                 @click="openSubmitReport(duty)"
               >
                 Submit Report
-              </v-btn>
+              </BaseButton>
 
-              <v-btn
+              <BaseButton
                 v-if="duty.status === 'Submitted'"
-                size="small"
+                size="x-small"
                 variant="text"
+                color="primary"
+                rounded="md"
                 @click="viewReport(duty)"
               >
                 View Report
-              </v-btn>
+              </BaseButton>
             </div>
-          </v-card-text>
-        </v-card>
+          </div>
+        </BaseCard>
       </v-col>
     </v-row>
 
-    <!-- Assign Duty Dialog -->
-    <v-dialog v-model="showAssignDialog" max-width="500">
-      <v-card class="pa-4 rounded-xl">
-        <v-card-title>Assign New Duty</v-card-title>
+    <!-- Dialogs -->
+    <BaseModal v-model="showAssignDialog" title="Assign New Duty" max-width="500">
+      <div class="pa-2">
+        <BaseInput v-model="newDuty.title" label="Duty Title" class="mb-2" />
+        <v-autocomplete
+          v-model="newDuty.assigned_id"
+          :items="memberStore.members"
+          item-title="name"
+          item-value="id"
+          label="Select Leader"
+          variant="outlined"
+          density="comfortable"
+          rounded="md"
+          color="primary"
+          class="mb-2"
+        />
+        <BaseInput v-model="newDuty.date" label="Due Date" type="date" class="mb-2" />
+        <BaseInput v-model="newDuty.category" label="Category" class="mb-2" />
+        <v-textarea
+          v-model="newDuty.notes"
+          label="Instructions"
+          variant="outlined"
+          density="comfortable"
+          rounded="md"
+          color="primary"
+          rows="3"
+        />
+      </div>
+      <template #actions>
+        <BaseButton variant="text" color="medium-emphasis" @click="showAssignDialog = false">Cancel</BaseButton>
+        <BaseButton @click="assignDuty">Assign Duty</BaseButton>
+      </template>
+    </BaseModal>
 
-        <v-card-text>
-          <v-text-field
-            v-model="newDuty.title"
-            label="Duty Title"
-            variant="outlined"
-          />
+    <BaseModal v-model="showReportDialog" title="Submit Duty Report" max-width="500">
+      <div class="pa-2">
+        <v-textarea
+          v-model="reportNotes"
+          label="Report Notes"
+          rows="4"
+          variant="outlined"
+          density="comfortable"
+          rounded="md"
+          color="primary"
+        />
+      </div>
+      <template #actions>
+        <BaseButton variant="text" color="medium-emphasis" @click="showReportDialog = false">Cancel</BaseButton>
+        <BaseButton color="success" @click="submitReport">Submit</BaseButton>
+      </template>
+    </BaseModal>
 
-          <v-autocomplete
-            v-model="newDuty.assigned_id"
-            :items="memberStore.members"
-            item-title="name"
-            item-value="id"
-            label="Select Leader"
-            variant="outlined"
-          />
-
-          <v-text-field
-            v-model="newDuty.date"
-            label="Due Date"
-            type="date"
-            variant="outlined"
-          />
-
-          <v-text-field
-            v-model="newDuty.category"
-            label="Category"
-            variant="outlined"
-          />
-
-          <v-textarea
-            v-model="newDuty.notes"
-            label="Instructions"
-            variant="outlined"
-          />
-        </v-card-text>
-
-        <v-card-actions>
-          <v-spacer />
-          <v-btn variant="text" @click="showAssignDialog = false">
-            Cancel
-          </v-btn>
-          <v-btn color="primary" @click="assignDuty">
-            Assign
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-
-    <!-- Submit Report Dialog -->
-    <v-dialog v-model="showReportDialog" max-width="500">
-      <v-card class="pa-4 rounded-xl">
-        <v-card-title>Submit Duty Report</v-card-title>
-
-        <v-card-text>
-          <v-textarea
-            v-model="reportNotes"
-            label="Report Notes"
-            rows="4"
-            variant="outlined"
-          />
-        </v-card-text>
-
-        <v-card-actions>
-          <v-spacer />
-          <v-btn variant="text" @click="showReportDialog = false">
-            Cancel
-          </v-btn>
-          <v-btn color="success" @click="submitReport">
-            Submit
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-
-    <!-- View Report -->
-    <v-dialog v-model="showViewDialog" max-width="500">
-      <v-card class="pa-4 rounded-xl">
-        <v-card-title>Duty Report</v-card-title>
-
-        <v-card-text>
-          {{ selectedDuty?.notes }}
-        </v-card-text>
-
-        <v-card-actions>
-          <v-spacer />
-          <v-btn @click="showViewDialog = false">Close</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-
-  </v-container>
+    <BaseModal v-model="showViewDialog" title="Duty Report" max-width="500">
+      <div class="pa-2 text-body-2 text-medium-emphasis">
+        {{ selectedDuty?.notes }}
+      </div>
+      <template #actions>
+        <BaseButton variant="text" color="medium-emphasis" @click="showViewDialog = false">Close</BaseButton>
+      </template>
+    </BaseModal>
+  </div>
 </template>
 
 <script setup>
@@ -266,18 +232,9 @@ const getStatusColor = (status) => {
 const assignDuty = async () => {
   try {
     await api.post('/duties', newDuty.value)
-
     await dutyStore.fetchDuties()
-
     showAssignDialog.value = false
-
-    newDuty.value = {
-      title: '',
-      assigned_id: null,
-      date: '',
-      category: '',
-      notes: '',
-    }
+    newDuty.value = { title: '', assigned_id: null, date: '', category: '', notes: '' }
   } catch (err) {
     console.error(err)
   }
@@ -294,9 +251,7 @@ const submitReport = async () => {
     await api.put(`/duties/${selectedDuty.value.id}/submit`, {
       notes: reportNotes.value,
     })
-
     await dutyStore.fetchDuties()
-
     showReportDialog.value = false
   } catch (err) {
     console.error(err)
@@ -310,8 +265,22 @@ const viewReport = (duty) => {
 </script>
 
 <style scoped>
-.border-t-lg {
-  border-top-width: 6px !important;
+.border-thin {
+  border: 1px solid rgba(121, 85, 72, 0.1) !important;
+}
+
+.border-t-priority {
+  border-top-width: 4px !important;
   border-top-style: solid !important;
 }
+
+.text-tiny {
+  font-size: 0.65rem;
+}
+
+.uppercase-none {
+  text-transform: none !important;
+}
+
+.gap-2 { gap: 8px; }
 </style>

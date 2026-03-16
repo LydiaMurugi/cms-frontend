@@ -12,7 +12,13 @@ export const useAuthStore = defineStore("auth", {
 
   getters: {
     isAuthenticated: (state) => !!state.token,
-    isAdmin: (state) => state.user?.role === "admin",
+    isSuperAdmin: (state) => state.user?.role === "super-admin",
+    isChurchAdmin: (state) => state.user?.role === "church-admin",
+    isMember: (state) => state.user?.role === "member",
+    // Helper for any admin access
+    isAdmin: (state) => ["super-admin", "church-admin"].includes(state.user?.role),
+    tenantId: (state) => state.user?.tenantId || null,
+    needsPasswordChange: (state) => state.user?.needsPasswordChange || false,
   },
 
   actions: {
@@ -38,12 +44,31 @@ export const useAuthStore = defineStore("auth", {
           })
         )
 
-        return { success: true }
+        return { 
+          success: true, 
+          needsPasswordChange: user.needsPasswordChange 
+        }
       } catch (error) {
         return {
           success: false,
           message:
             error.response?.data?.error || "Login failed",
+        }
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async changePassword(newPassword) {
+      try {
+        this.loading = true
+        await api.post("/auth/change-password", { password: newPassword })
+        if (this.user) this.user.needsPasswordChange = false
+        return { success: true }
+      } catch (error) {
+        return {
+          success: false,
+          message: error.response?.data?.error || "Password change failed",
         }
       } finally {
         this.loading = false
@@ -73,15 +98,8 @@ export const useAuthStore = defineStore("auth", {
         const res = await api.get("/auth/me")
 
         this.user = res.data
-        this.token = res.data.token
-
-        localStorage.setItem(
-          "churchAuth",
-          JSON.stringify({
-            token: res.data.token,
-            user: res.data,
-          })
-        )
+        // Ensure checked is set
+        this.checked = true
       } catch (error) {
         this.logout()
       }
@@ -93,7 +111,6 @@ export const useAuthStore = defineStore("auth", {
 
       try {
         const res = await api.put("/auth/me", payload)
-        // Update the user object with the response
         this.user = { ...this.user, ...res.data.user }
         return { success: true, message: "Profile updated successfully" }
       } catch (err) {
@@ -113,7 +130,10 @@ export const useAuthStore = defineStore("auth", {
     async checkAuth() {
       const stored = localStorage.getItem("churchAuth")
 
-      if (!stored) return
+      if (!stored) {
+        this.checked = true
+        return
+      }
 
       const data = JSON.parse(stored)
 

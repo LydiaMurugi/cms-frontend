@@ -1,84 +1,88 @@
 <template>
-  <v-container fluid class="bg-background pa-6 fill-height align-start">
+  <div class="project-board-view">
     <!-- Header Area -->
-    <v-row class="mb-6" align="center">
-      <v-col cols="12" md="6">
-        <h1 class="text-h4 font-weight-bold text-primary">Church Projects</h1>
-        <p class="text-subtitle-1 text-grey">
-          Manage church initiatives and monitor progress
-        </p>
-      </v-col>
-
-      <v-col cols="12" md="6" class="text-md-right">
-        <v-btn
-          color="primary"
-          prepend-icon="mdi-plus"
-          size="large"
-          @click="showAddProjectDialog = true"
-        >
-          New Project
-        </v-btn>
-      </v-col>
-    </v-row>
+    <div class="d-flex align-center justify-space-between mb-6 px-2">
+      <div>
+        <h1 class="text-h5 font-weight-bold text-primary mb-1">Church Projects</h1>
+        <p class="text-caption text-grey-darken-1">Manage church initiatives and monitor progress</p>
+      </div>
+      <BaseButton
+        color="primary"
+        prepend-icon="mdi-plus"
+        size="small"
+        rounded="md"
+        @click="showAddProjectDialog = true"
+      >
+        New Project
+      </BaseButton>
+    </div>
 
     <!-- Loading -->
     <v-progress-linear
       v-if="projectStore.loading"
       indeterminate
       color="primary"
-      class="mb-4"
+      class="mb-4 rounded-pill"
+      height="2"
     />
 
     <!-- Kanban Board Columns -->
-    <v-row class="kanban-container">
+    <v-row class="kanban-container" dense>
       <v-col
         v-for="column in columns"
         :key="column.title"
         cols="12"
         md="4"
       >
-        <v-card
-          variant="tonal"
-          :color="column.color"
-          class="rounded-lg mb-4"
+        <!-- Column Header -->
+        <BaseCard
+          elevation="0"
+          rounded="md"
+          class="border-thin bg-white mb-4"
+          no-padding
         >
-          <v-card-title class="d-flex align-center font-weight-bold">
-            {{ column.title }}
+          <div class="pa-3 d-flex align-center">
+            <v-icon :icon="column.icon" :color="column.color" size="20" class="mr-2" />
+            <span class="text-subtitle-2 font-weight-bold">{{ column.title }}</span>
             <v-spacer />
-            <v-chip size="small" :color="column.color">
+            <v-chip size="x-small" :color="column.color" variant="tonal" rounded="md" class="font-weight-bold">
               {{ getProjectCount(column.status) }}
             </v-chip>
-          </v-card-title>
-        </v-card>
+          </div>
+        </BaseCard>
 
         <!-- Project Cards -->
         <div class="project-list">
-          <v-card
+          <BaseCard
             v-for="project in getProjectsByStatus(column.status)"
             :key="project.id"
-            elevation="2"
-            class="mb-4 rounded-lg border-s-lg"
-            :style="{ borderInlineStartColor: getPriorityColor(project.priority) }"
+            elevation="0"
+            rounded="md"
+            class="mb-3 border-thin bg-white clickable-card"
+            no-padding
             @click="viewProjectDetails(project.id)"
           >
-            <v-card-text>
+            <div class="pa-4 border-s-priority" :style="{ borderInlineStartColor: getPriorityColor(project.priority) }">
               <div class="d-flex justify-space-between align-center mb-2">
-                <span
-                  class="text-caption font-weight-bold text-uppercase text-grey"
+                <v-chip
+                  size="x-small"
+                  variant="outlined"
+                  class="text-tiny font-weight-bold"
+                  :style="{ color: getPriorityColor(project.priority), borderColor: getPriorityColor(project.priority) }"
                 >
                   {{ project.priority }}
-                </span>
-                <v-icon icon="mdi-dots-vertical" size="small" color="grey" />
+                </v-chip>
+                <BaseButton icon="mdi-dots-vertical" variant="text" size="x-small" color="grey" />
               </div>
 
-              <div class="text-h6 font-weight-bold mb-3">
+              <div class="text-subtitle-1 font-weight-bold mb-3 text-primary">
                 {{ project.title }}
               </div>
 
               <div class="d-flex align-center mb-1">
-                <span class="text-caption text-grey">Progress</span>
+                <span class="text-tiny text-medium-emphasis font-weight-bold uppercase-none">Progress</span>
                 <v-spacer />
-                <span class="text-caption font-weight-bold">
+                <span class="text-tiny font-weight-bold text-primary">
                   {{ project.progress }}%
                 </span>
               </div>
@@ -86,48 +90,53 @@
               <v-progress-linear
                 :model-value="project.progress"
                 :color="column.color"
-                height="6"
-                rounded
+                height="4"
+                rounded="pill"
               />
-            </v-card-text>
 
-            <v-divider />
-
-            <v-card-actions class="pa-3">
-              <span class="text-caption text-grey">
-                {{ project.assignedTo }}
-              </span>
-
-              <v-spacer />
-
-              <v-btn
-                variant="text"
-                size="small"
-                icon="mdi-arrow-right-bold-circle-outline"
-                @click.stop="moveProject(project.id, column.nextStatus)"
-                v-if="column.nextStatus"
-              />
-            </v-card-actions>
-          </v-card>
+              <div class="mt-4 d-flex align-center">
+                <v-avatar size="24" color="primary-lighten-5" class="mr-2 border-thin">
+                  <span class="text-tiny text-primary font-weight-bold">{{ project.assignedTo.charAt(0) }}</span>
+                </v-avatar>
+                <span class="text-tiny text-medium-emphasis">{{ project.assignedTo }}</span>
+                
+                <v-spacer />
+                
+                <BaseButton
+                  v-if="column.nextStatus"
+                  variant="text"
+                  size="x-small"
+                  color="primary"
+                  icon="mdi-arrow-right"
+                  @click.stop="moveProject(project.id, column.nextStatus)"
+                />
+              </div>
+            </div>
+          </BaseCard>
         </div>
       </v-col>
     </v-row>
 
     <!-- Add Project Dialog -->
-    <v-dialog v-model="showAddProjectDialog" max-width="500">
-      <v-card title="Add New Project" class="pa-4 rounded-xl">
-        <v-card-actions>
-          <v-spacer />
-          <v-btn text="Cancel" @click="showAddProjectDialog = false" />
-          <v-btn
-            color="primary"
-            text="Create"
-            @click="showAddProjectDialog = false"
-          />
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-  </v-container>
+    <BaseModal v-model="showAddProjectDialog" title="Add New Project" max-width="500">
+      <div class="pa-2">
+        <BaseInput label="Project Title" placeholder="e.g. Roof Renovation" />
+        <v-select
+          label="Priority"
+          :items="['Low', 'Medium', 'High', 'Urgent']"
+          variant="outlined"
+          density="comfortable"
+          rounded="md"
+          color="primary"
+          class="mt-2"
+        />
+      </div>
+      <template #actions>
+        <BaseButton variant="text" @click="showAddProjectDialog = false">Cancel</BaseButton>
+        <BaseButton @click="showAddProjectDialog = false">Create Project</BaseButton>
+      </template>
+    </BaseModal>
+  </div>
 </template>
 
 <script setup>
@@ -140,7 +149,6 @@ const router = useRouter()
 
 const showAddProjectDialog = ref(false)
 
-/* Load projects from API */
 onMounted(async () => {
   if (!projectStore.projects.length) {
     await projectStore.fetchProjects()
@@ -151,18 +159,21 @@ const columns = [
   {
     title: 'To Do',
     status: 'To Do',
+    icon: 'mdi-circle-outline',
     color: 'grey-darken-1',
     nextStatus: 'In Progress',
   },
   {
     title: 'In Progress',
     status: 'In Progress',
-    color: 'info',
+    icon: 'mdi-progress-clock',
+    color: 'secondary',
     nextStatus: 'Completed',
   },
   {
     title: 'Completed',
     status: 'Completed',
+    icon: 'mdi-check-circle-outline',
     color: 'success',
     nextStatus: null,
   },
@@ -179,9 +190,9 @@ const getProjectCount = (status) => {
 const getPriorityColor = (priority) => {
   const map = {
     Low: '#95A5A6',
-    Medium: '#3498DB',
-    High: '#E67E22',
-    Urgent: '#E74C3C',
+    Medium: '#795548',
+    High: '#A67C52',
+    Urgent: '#B03A2E',
   }
   return map[priority] || '#BDC3C7'
 }
@@ -196,17 +207,29 @@ const viewProjectDetails = (id) => {
 </script>
 
 <style scoped>
-.kanban-container {
-  height: calc(100vh - 200px);
-  overflow-x: auto;
+.border-thin {
+  border: 1px solid rgba(121, 85, 72, 0.1) !important;
 }
 
-.project-list {
-  min-height: 500px;
-}
-
-.border-s-lg {
+.border-s-priority {
   border-inline-start-width: 4px !important;
   border-inline-start-style: solid !important;
+}
+
+.text-tiny {
+  font-size: 0.65rem;
+}
+
+.clickable-card {
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.clickable-card:hover {
+  border-color: #795548 !important;
+}
+
+.uppercase-none {
+  text-transform: none !important;
 }
 </style>

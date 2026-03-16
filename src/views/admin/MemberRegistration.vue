@@ -2,30 +2,31 @@
   <v-container fluid class="fill-height bg-background">
     <v-row justify="center">
       <v-col cols="12" sm="8" md="6" lg="5">
-        <v-card elevation="4" class="pa-6 rounded-lg">
+        <BaseCard elevation="0" rounded="md" class="pa-6 border-thin bg-white">
           <!-- Progress Indicator -->
           <v-progress-linear
             v-model="progress"
             color="primary"
-            height="8"
-            rounded
+            height="4"
+            rounded="pill"
             class="mb-6"
           />
 
-          <v-card-item class="text-center">
-            <v-icon
-              icon="mdi-account-plus"
-              size="large"
-              color="primary"
-              class="mb-2"
-            />
-            <v-card-title class="text-h5 font-weight-bold">
+          <div class="text-center mb-6">
+            <v-avatar color="primary-lighten-5" size="56" rounded="md" class="mb-3">
+              <v-icon
+                icon="mdi-account-plus"
+                size="28"
+                color="primary"
+              />
+            </v-avatar>
+            <h1 class="text-h5 font-weight-bold text-primary">
               Member Registration
-            </v-card-title>
-            <v-card-subtitle>
+            </h1>
+            <p class="text-caption text-grey-darken-1">
               Create a new profile in the church database
-            </v-card-subtitle>
-          </v-card-item>
+            </p>
+          </div>
 
           <v-form
             ref="form"
@@ -35,44 +36,41 @@
             <v-row dense>
               <!-- Personal Details -->
               <v-col cols="12" sm="6">
-                <v-text-field
+                <BaseInput
                   v-model="formData.firstName"
                   label="First Name"
                   placeholder="John"
-                  variant="outlined"
                   :rules="[rules.required]"
                   prepend-inner-icon="mdi-account-outline"
                 />
               </v-col>
 
               <v-col cols="12" sm="6">
-                <v-text-field
+                <BaseInput
                   v-model="formData.lastName"
                   label="Last Name"
                   placeholder="Doe"
-                  variant="outlined"
                   :rules="[rules.required]"
                   prepend-inner-icon="mdi-account-outline"
                 />
               </v-col>
 
               <v-col cols="12">
-                <v-text-field
+                <BaseInput
                   v-model="formData.email"
                   label="Email Address"
                   placeholder="john.doe@example.com"
-                  variant="outlined"
+                  type="email"
                   :rules="[rules.required, rules.email]"
                   prepend-inner-icon="mdi-email-outline"
                 />
               </v-col>
 
               <v-col cols="12">
-                <v-text-field
+                <BaseInput
                   v-model="formData.phone"
                   label="Phone Number"
                   placeholder="+1 (555) 000-0000"
-                  variant="outlined"
                   prepend-inner-icon="mdi-phone-outline"
                 />
               </v-col>
@@ -84,17 +82,19 @@
                   :items="memberStore.groups"
                   label="Assign to Church Group"
                   variant="outlined"
+                  density="comfortable"
+                  rounded="md"
+                  color="primary"
                   prepend-inner-icon="mdi-account-group-outline"
                   :rules="[rules.required]"
                 />
               </v-col>
 
               <v-col cols="12">
-                <v-text-field
+                <BaseInput
                   v-model="formData.password"
                   label="Initial Password"
                   :type="showPassword ? 'text' : 'password'"
-                  variant="outlined"
                   :append-inner-icon="
                     showPassword ? 'mdi-eye-off' : 'mdi-eye'
                   "
@@ -105,38 +105,40 @@
               </v-col>
             </v-row>
 
-            <v-btn
+            <BaseButton
               type="submit"
               color="primary"
               block
               size="large"
-              class="mt-6 font-weight-bold"
+              class="mt-6"
+              rounded="md"
               :loading="loading"
               :disabled="!isFormValid"
             >
               Create Account
-            </v-btn>
+            </BaseButton>
 
             <div class="text-center mt-4">
-              <span class="text-body-2 text-grey">
+              <span class="text-caption text-grey-darken-1">
                 Already have an account?
               </span>
-              <v-btn
+              <BaseButton
                 variant="text"
                 color="secondary"
                 size="small"
                 to="/login"
+                class="px-1"
               >
                 Login here
-              </v-btn>
+              </BaseButton>
             </div>
           </v-form>
-        </v-card>
+        </BaseCard>
       </v-col>
     </v-row>
 
     <!-- Success Snackbar -->
-    <v-snackbar v-model="successMsg" color="success" timeout="3000">
+    <v-snackbar v-model="successMsg" color="success" timeout="3000" rounded="md" elevation="0">
       Member registered successfully!
     </v-snackbar>
   </v-container>
@@ -214,7 +216,7 @@ const handleRegister = async () => {
 </script>
 
 <style scoped>
-.v-container {
-  min-height: 100vh;
+.border-thin {
+  border: 1px solid rgba(121, 85, 72, 0.1) !important;
 }
 </style>

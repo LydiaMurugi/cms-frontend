@@ -1,26 +1,32 @@
 <template>
-  <v-container class="pa-6 pa-md-10" max-width="700">
+  <v-container class="pa-4 pa-md-6 main-content-container">
 
-    <!-- Banner Card -->
-    <v-card rounded="xl" elevation="0" class="mb-6 banner-card">
-      <div class="banner-bg" />
-      <v-card-text class="d-flex flex-column align-center py-8">
+    <!-- Banner Card with Avatar - Scroll Theme -->
+    <BaseCard rounded="md" elevation="0" class="mb-6 border-thin bg-white">
+      <v-card-text class="d-flex flex-column align-center py-6">
 
-        <v-avatar size="96" class="avatar-ring mb-3">
-          <v-img v-if="auth.user?.avatar" :src="auth.user.avatar" :alt="auth.user.name" />
-          <span v-else class="text-h4 font-weight-bold text-white">{{ initials }}</span>
+        <v-avatar size="80" color="primary" class="mb-3 rounded-lg">
+          <v-img
+            v-if="auth.user?.avatar"
+            :src="auth.user.avatar"
+            :alt="auth.user.name"
+          />
+          <span v-else class="text-h4 font-weight-bold text-white">
+            {{ initials }}
+          </span>
         </v-avatar>
 
-        <h2 class="text-h5 font-weight-bold mt-1">{{ auth.user?.name }}</h2>
-        <p class="text-medium-emphasis text-body-2">{{ auth.user?.email }}</p>
+        <h2 class="text-h6 font-weight-bold mt-2 text-primary">{{ auth.user?.name }}</h2>
+        <p class="text-caption text-medium-emphasis">{{ auth.user?.email }}</p>
 
         <!-- Role + Status chips -->
-        <div class="d-flex gap-2 mt-3 flex-wrap justify-center">
+        <div class="d-flex gap-2 mt-4 flex-wrap justify-center">
           <v-chip
             v-if="auth.user?.role"
-            :color="roleColor"
+            color="primary"
             variant="tonal"
-            size="small"
+            size="x-small"
+            rounded="md"
             prepend-icon="mdi-shield-account"
           >
             {{ capitalize(auth.user.role) }}
@@ -29,234 +35,128 @@
           <v-chip
             :color="auth.user?.status === 'Active' ? 'success' : 'warning'"
             variant="tonal"
-            size="small"
+            size="x-small"
+            rounded="md"
             prepend-icon="mdi-circle-medium"
           >
             {{ auth.user?.status || 'Active' }}
           </v-chip>
-
-          <v-chip
-            v-if="auth.user?.ministry_group"
-            color="secondary"
-            variant="tonal"
-            size="small"
-            prepend-icon="mdi-account-group"
-          >
-            {{ auth.user.ministry_group }}
-          </v-chip>
         </div>
 
       </v-card-text>
-    </v-card>
+    </BaseCard>
 
     <!-- DISPLAY MODE -->
     <template v-if="!editMode">
 
       <!-- Personal Info -->
-      <v-card rounded="xl" elevation="1" class="mb-5">
-        <v-card-title class="section-label">Personal Information</v-card-title>
-
-        <v-list lines="two" class="px-2">
-
+      <BaseCard title="Personal Information" elevation="0" rounded="md" class="mb-4 border-thin bg-white">
+        <v-list lines="two" class="pa-0 bg-transparent">
           <v-list-item
             prepend-icon="mdi-account-outline"
             title="Full Name"
             :subtitle="auth.user?.name || '—'"
-            rounded="lg"
           />
-          <v-divider inset />
+          <v-divider class="border-opacity-25" />
 
           <v-list-item
             prepend-icon="mdi-email-outline"
             title="Email Address"
             :subtitle="auth.user?.email || '—'"
-            rounded="lg"
           />
-          <v-divider inset />
+          <v-divider class="border-opacity-25" />
 
           <v-list-item
             prepend-icon="mdi-phone-outline"
             title="Phone Number"
             :subtitle="auth.user?.phone || '—'"
-            rounded="lg"
           />
-          <v-divider inset />
-
-          <v-list-item
-            prepend-icon="mdi-map-marker-outline"
-            title="Address"
-            :subtitle="auth.user?.address || '—'"
-            rounded="lg"
-          />
-          <v-divider inset />
-
-          <v-list-item
-            prepend-icon="mdi-cake-variant-outline"
-            title="Date of Birth"
-            :subtitle="formatDate(auth.user?.birthdate) || '—'"
-            rounded="lg"
-          />
-
         </v-list>
-      </v-card>
+      </BaseCard>
 
-      <!-- Church Info -->
-      <v-card rounded="xl" elevation="1" class="mb-5">
-        <v-card-title class="section-label">Church Details</v-card-title>
-
-        <v-list lines="two" class="px-2">
-
-          <v-list-item
-            prepend-icon="mdi-shield-account-outline"
-            title="Role"
-            :subtitle="capitalize(auth.user?.role) || '—'"
-            rounded="lg"
-          />
-          <v-divider inset />
-
-          <v-list-item
-            prepend-icon="mdi-account-group-outline"
-            title="Ministry Group"
-            :subtitle="auth.user?.ministry_group || '—'"
-            rounded="lg"
-          />
-          <v-divider inset />
-
-          <v-list-item
-            prepend-icon="mdi-calendar-check-outline"
-            title="Date Joined"
-            :subtitle="formatDate(auth.user?.joined) || '—'"
-            rounded="lg"
-          />
-          <v-divider inset />
-
-          <v-list-item
-            prepend-icon="mdi-calendar-outline"
-            title="Account Created"
-            :subtitle="memberSince || '—'"
-            rounded="lg"
-          />
-          <v-divider inset />
-
-          <v-list-item
-            prepend-icon="mdi-circle-outline"
-            title="Status"
-            rounded="lg"
-          >
-            <template #subtitle>
-              <v-chip
-                :color="auth.user?.status === 'Active' ? 'success' : 'warning'"
-                variant="tonal"
-                size="x-small"
-                class="mt-1"
-              >
-                {{ auth.user?.status || 'Active' }}
-              </v-chip>
-            </template>
-          </v-list-item>
-
-        </v-list>
-      </v-card>
-
-      <!-- Actions -->
-      <v-card rounded="xl" elevation="1">
-        <v-card-actions class="px-6 py-4 gap-3">
-          <v-btn
-            variant="tonal"
-            color="primary"
-            prepend-icon="mdi-pencil-outline"
-            rounded="lg"
-            class="flex-grow-1"
-            @click="editMode = true"
-          >
-            Edit Profile
-          </v-btn>
-          <v-btn
-            variant="tonal"
-            color="error"
-            prepend-icon="mdi-logout"
-            rounded="lg"
-            class="flex-grow-1"
-            @click="handleLogout"
-          >
-            Sign Out
-          </v-btn>
-        </v-card-actions>
-      </v-card>
+      <!-- Actions - Standardized Tonal Buttons -->
+      <div class="d-flex gap-3 mt-6">
+        <BaseButton
+          variant="tonal"
+          color="primary"
+          size="small"
+          rounded="md"
+          class="flex-grow-1"
+          @click="editMode = true"
+        >
+          Edit Profile
+        </BaseButton>
+        <BaseButton
+          variant="tonal"
+          color="error"
+          size="small"
+          rounded="md"
+          class="flex-grow-1"
+          @click="handleLogout"
+        >
+          Sign Out
+        </BaseButton>
+      </div>
 
     </template>
 
     <!-- EDIT MODE -->
     <template v-else>
+      <BaseCard title="Edit Profile" elevation="0" rounded="md" class="border-thin bg-white">
+        <v-alert v-if="error" type="error" variant="tonal" density="compact" rounded="md" class="mb-4">
+          {{ error }}
+        </v-alert>
 
-      <v-card rounded="xl" elevation="1">
-        <v-card-title class="section-label">Edit Profile</v-card-title>
+        <v-form ref="form" v-model="valid" lazy-validation class="pa-2">
+          <BaseInput
+            v-model="editForm.name"
+            label="Full Name"
+            :rules="nameRules"
+            class="mb-3"
+          />
 
-        <v-card-text class="pa-6">
-          <v-alert v-if="error" type="error" class="mb-4">
-            {{ error }}
-          </v-alert>
+          <BaseInput
+            v-model="editForm.email"
+            label="Email Address"
+            type="email"
+            :rules="emailRules"
+            class="mb-3"
+          />
 
-          <v-form ref="form" v-model="valid" lazy-validation>
-            <v-text-field
-              v-model="editForm.name"
-              label="Full Name"
-              prepend-icon="mdi-account-outline"
-              :rules="nameRules"
-              required
-              outlined
-              rounded="lg"
-              class="mb-4"
-            />
+          <BaseInput
+            v-model="editForm.phone"
+            label="Phone Number"
+            class="mb-3"
+          />
+        </v-form>
 
-            <v-text-field
-              v-model="editForm.email"
-              label="Email Address"
-              type="email"
-              prepend-icon="mdi-email-outline"
-              :rules="emailRules"
-              required
-              outlined
-              rounded="lg"
-              class="mb-4"
-            />
-
-            <v-text-field
-              v-model="editForm.phone"
-              label="Phone Number"
-              prepend-icon="mdi-phone-outline"
-              outlined
-              rounded="lg"
-              class="mb-4"
-            />
-          </v-form>
-        </v-card-text>
-
-        <v-card-actions class="px-6 pb-5 pt-3 gap-3">
-          <v-btn
-            variant="outlined"
-            color="medium-emphasis"
-            rounded="lg"
-            class="flex-grow-1"
-            @click="cancelEdit"
-          >
-            Cancel
-          </v-btn>
-          <v-btn
-            :loading="auth.loading"
-            :disabled="!valid"
-            variant="tonal"
-            color="primary"
-            prepend-icon="mdi-content-save-outline"
-            rounded="lg"
-            class="flex-grow-1"
-            @click="saveProfile"
-          >
-            Save Changes
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-
+        <template #actions>
+          <div class="d-flex gap-2 w-100">
+            <BaseButton
+              variant="text"
+              color="medium-emphasis"
+              size="small"
+              rounded="md"
+              class="flex-grow-1"
+              @click="cancelEdit"
+            >
+              Cancel
+            </BaseButton>
+            <BaseButton
+              :loading="auth.loading"
+              :disabled="!valid"
+              variant="tonal"
+              color="primary"
+              size="small"
+              rounded="md"
+              class="flex-grow-1"
+              @click="saveProfile"
+            >
+              Save Changes
+            </BaseButton>
+          </div>
+        </template>
+      </BaseCard>
     </template>
 
   </v-container>
@@ -298,22 +198,14 @@ const initials = computed(() => {
   if (!auth.user?.name) return '?'
   return auth.user.name
     .split(' ')
-    .map(n => n[0])
+    .map((n) => n[0])
     .slice(0, 2)
     .join('')
     .toUpperCase()
 })
 
-const memberSince = computed(() => formatDate(auth.user?.created_at))
-
-const roleColor = computed(() => {
-  const map = { admin: 'error', leader: 'primary', treasurer: 'warning', member: 'secondary' }
-  return map[auth.user?.role] || 'primary'
-})
-
 // Lifecycle
 onMounted(() => {
-  // Pre-fill form with current user data
   if (auth.user) {
     editForm.name = auth.user.name || ''
     editForm.email = auth.user.email || ''
@@ -327,15 +219,6 @@ const capitalize = (str) => {
   return str.charAt(0).toUpperCase() + str.slice(1)
 }
 
-const formatDate = (val) => {
-  if (!val) return null
-  return new Date(val).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  })
-}
-
 const handleLogout = () => {
   auth.logout()
   router.replace('/login')
@@ -344,7 +227,6 @@ const handleLogout = () => {
 const cancelEdit = () => {
   editMode.value = false
   error.value = null
-  // Reset form to current user data
   if (auth.user) {
     editForm.name = auth.user.name || ''
     editForm.email = auth.user.email || ''
@@ -353,7 +235,6 @@ const cancelEdit = () => {
 }
 
 const saveProfile = async () => {
-  // Validate form first
   const isValid = await form.value.validate()
   if (!isValid) return
 
@@ -373,32 +254,15 @@ const saveProfile = async () => {
 </script>
 
 <style scoped>
-.banner-card {
-  background: linear-gradient(135deg, #f5f7ff 0%, #eef2ff 100%);
-  border: 1px solid #e0e7ff;
-  position: relative;
-  overflow: hidden;
+.border-thin {
+  border: 1px solid rgba(121, 85, 72, 0.1) !important;
 }
 
-.banner-bg {
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(ellipse at top, #c7d2fe 0%, transparent 70%);
-  opacity: 0.4;
-  pointer-events: none;
-}
+.gap-2 { gap: 8px; }
+.gap-3 { gap: 12px; }
 
-.avatar-ring {
-  background: linear-gradient(135deg, #6366f1, #818cf8);
-  box-shadow: 0 0 0 4px white, 0 0 0 6px #c7d2fe;
-}
-
-.section-label {
-  padding: 18px 24px 6px;
-  font-size: 0.7rem !important;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  color: #9ca3af;
-  text-transform: uppercase;
+.main-content-container {
+  max-width: 600px;
+  margin: 0 auto;
 }
 </style>

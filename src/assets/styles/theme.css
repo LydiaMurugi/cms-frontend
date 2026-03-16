@@ -1,0 +1,48 @@
+:root {
+  /* Base (Light) Colors - Ancient Scroll Palette */
+  --color-background: #F4ECE1; /* Parchment Background */
+  --color-surface:    #FAF6F0; /* Lighter Parchment Surface */
+  --color-primary:    #795548; /* Mid Brown */
+  --color-secondary:  #A1887F; /* Muted Brown */
+  --color-error:      #B03A2E; /* Earthy Red */
+  --color-info:       #5D4037; /* Dark Wood */
+  --color-success:    #4E6E5D; /* Sage / Olive */
+  --color-warning:    #A67C52; /* Ochre */
+
+  --font-size-base: 16px;
+  --border-radius:  4px;
+
+  /* Semantic Colors for Vuetify Sync */
+  --v-primary-base: #795548;
+  --v-secondary-base: #A1887F;
+  --v-background-base: #F4ECE1;
+  --v-surface-base: #FAF6F0;
+  --v-info-base: #5D4037;
+  --v-success-base: #4E6E5D;
+  --v-error-base: #B03A2E;
+  --v-warning-base: #A67C52;
+
+  /* Flat Shadows (Zeroed Out for Platform Standard) */
+  --shadow-sm: none;
+  --shadow-md: none;
+  --shadow-lg: none;
+
+  /* Flat Design Borders */
+  --border-light: 1px solid rgba(62, 39, 35, 0.1);
+
+  /* Small Border Radius */
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 4px;
+  --radius-lg: 4px;
+  --radius-xl: 4px;
+}
+
+/* dark‑theme overrides - Wood & Charcoal Palette */
+[data-theme='dark'] {
+  --color-background: #2C231E;
+  --color-surface:    #3E322B;
+  --color-primary:    #D7CCC8;
+  --color-secondary:  #A1887F;
+  --color-error:      #E57373;
+}

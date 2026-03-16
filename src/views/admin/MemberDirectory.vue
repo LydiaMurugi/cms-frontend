@@ -1,71 +1,63 @@
 <template>
-  <v-container fluid class="bg-background pa-6">
+  <div class="member-directory">
     <!-- Header Section -->
-    <v-row class="mb-6" align="center">
-      <v-col cols="12" md="6">
-        <h1 class="text-h4 font-weight-bold text-primary">
-          Member Directory
-        </h1>
-        <p class="text-subtitle-1 text-grey">
-          Manage and organize your congregation groups
-        </p>
-      </v-col>
+    <div class="d-flex align-center justify-space-between mb-6 px-2">
+      <div>
+        <h1 class="text-h5 font-weight-bold text-primary mb-1">Member Directory</h1>
+        <p class="text-caption text-grey-darken-1">Manage and organize your congregation groups</p>
+      </div>
+      <BaseButton
+        color="primary"
+        prepend-icon="mdi-plus"
+        size="small"
+        to="/admin/register"
+        rounded="md"
+      >
+        Add Member
+      </BaseButton>
+    </div>
 
-      <v-col cols="12" md="6" class="text-md-right">
-        <v-btn
-          color="primary"
-          prepend-icon="mdi-plus"
-          size="large"
-          to="/admin/register"
-          elevation="2"
-        >
-          Add New Member
-        </v-btn>
-      </v-col>
-    </v-row>
-
-    <!-- Search and Filter Bar -->
-    <v-card class="mb-6 rounded-lg" elevation="2">
-      <v-card-text>
+    <!-- Search and Filter Bar - Flat -->
+    <BaseCard class="mb-6 border-thin bg-white" elevation="0" rounded="md">
+      <div class="pa-4">
         <v-row dense align="center">
           <v-col cols="12" md="8">
-            <v-text-field
+            <BaseInput
               v-model="searchQuery"
               prepend-inner-icon="mdi-magnify"
-              label="Search by name, email, or phone..."
-              variant="outlined"
+              placeholder="Search by name, email, or phone..."
               hide-details
               clearable
-              density="comfortable"
-              class="bg-white"
             />
           </v-col>
 
-          <v-col cols="12" md="4" class="d-flex ga-2">
+          <v-col cols="12" md="4" class="d-flex gap-2">
             <v-select
               v-model="selectedGroup"
               :items="['All Groups', ...memberStore.groups]"
-              label="Filter by Group"
+              placeholder="Filter by Group"
               variant="outlined"
               hide-details
               density="comfortable"
+              rounded="md"
+              color="primary"
             />
 
-            <v-btn
+            <BaseButton
               icon="mdi-tune-variant"
               variant="tonal"
               color="primary"
+              size="small"
+              rounded="md"
               @click="showAdvancedFilters = !showAdvancedFilters"
             />
           </v-col>
         </v-row>
 
         <!-- Advanced Filters -->
-        <v-row v-if="showAdvancedFilters" class="mt-4 animated fadeIn">
-          <v-col cols="12">
-            <div
-              class="text-caption font-weight-bold mb-2 text-uppercase text-grey"
-            >
+        <v-expand-transition>
+          <div v-if="showAdvancedFilters" class="mt-4 pt-4 border-t">
+            <div class="text-tiny font-weight-bold mb-2 text-uppercase text-grey-darken-1">
               Quick Status Filter
             </div>
 
@@ -74,34 +66,28 @@
               selected-class="bg-primary text-white"
               mandatory
             >
-              <v-chip value="All">All Statuses</v-chip>
-              <v-chip value="Active" color="success" variant="outlined">
-                Active
-              </v-chip>
-              <v-chip value="Inactive" color="error" variant="outlined">
-                Inactive
-              </v-chip>
-              <v-chip value="Pending" color="warning" variant="outlined">
-                Pending
-              </v-chip>
+              <v-chip value="All" size="small" variant="outlined" filter>All Statuses</v-chip>
+              <v-chip value="Active" size="small" color="success" variant="tonal" filter>Active</v-chip>
+              <v-chip value="Inactive" size="small" color="error" variant="tonal" filter>Inactive</v-chip>
+              <v-chip value="Pending" size="small" color="warning" variant="tonal" filter>Pending</v-chip>
             </v-chip-group>
-          </v-col>
-        </v-row>
-      </v-card-text>
-    </v-card>
+          </div>
+        </v-expand-transition>
+      </div>
+    </BaseCard>
 
-    <!-- Data Table -->
-    <v-card class="rounded-lg" elevation="2">
+    <!-- Data Table Card - Flat -->
+    <BaseCard class="border-thin bg-white overflow-hidden" elevation="0" rounded="md" no-padding>
       <v-data-table
         :headers="headers"
         :items="filteredMembers"
         :search="searchQuery"
         :loading="memberStore.loading"
         hover
-        class="elevation-0"
+        class="bg-transparent custom-table"
       >
         <template #item.group="{ item }">
-          <v-chip size="small" variant="flat" color="info">
+          <v-chip size="x-small" variant="tonal" color="secondary" rounded="md">
             {{ item.group }}
           </v-chip>
         </template>
@@ -110,6 +96,8 @@
           <v-chip
             :color="getStatusColor(item.status)"
             size="x-small"
+            variant="flat"
+            rounded="md"
             class="text-uppercase font-weight-bold"
           >
             {{ item.status }}
@@ -117,37 +105,39 @@
         </template>
 
         <template #item.actions="{ item }">
-          <v-btn
-            icon="mdi-pencil-outline"
-            variant="text"
-            color="grey-darken-1"
-            size="small"
-            @click="editMember(item)"
-          />
-          <v-btn
-            icon="mdi-dots-vertical"
-            variant="text"
-            color="grey-darken-1"
-            size="small"
-          />
+          <div class="d-flex gap-1">
+            <BaseButton
+              icon="mdi-pencil-outline"
+              variant="text"
+              color="primary"
+              size="x-small"
+              @click="editMember(item)"
+            />
+            <BaseButton
+              icon="mdi-dots-vertical"
+              variant="text"
+              color="grey"
+              size="x-small"
+            />
+          </div>
         </template>
 
         <template #no-data>
           <div class="pa-10 text-center">
-            <v-icon size="64" color="grey-lighten-1">
+            <v-icon size="48" color="grey-lighten-2" class="mb-3">
               mdi-account-search-outline
             </v-icon>
-            <div class="text-h6 text-grey mt-2">
+            <div class="text-subtitle-2 text-grey mb-4">
               No members found matching your criteria
             </div>
-            <v-btn color="primary" variant="text" @click="resetFilters">
+            <BaseButton color="primary" variant="text" size="small" @click="resetFilters">
               Clear all filters
-            </v-btn>
+            </BaseButton>
           </div>
         </template>
       </v-data-table>
-    </v-card>
-  </v-container>
+    </BaseCard>
+  </div>
 </template>
 
 <script setup>
@@ -175,23 +165,30 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.animated {
-  animation-duration: 0.3s;
-  animation-fill-mode: both;
+.border-thin {
+  border: 1px solid rgba(121, 85, 72, 0.1) !important;
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.border-t {
+  border-top: 1px solid rgba(121, 85, 72, 0.05) !important;
 }
 
-.fadeIn {
-  animation-name: fadeIn;
+.text-tiny {
+  font-size: 0.65rem;
+  letter-spacing: 0.05em;
+}
+
+.gap-1 { gap: 4px; }
+.gap-2 { gap: 8px; }
+
+:deep(.custom-table .v-data-table-header) {
+  background-color: #fcfaf7;
+}
+
+:deep(.custom-table .v-data-table-header th) {
+  font-weight: 700 !important;
+  text-transform: uppercase;
+  font-size: 0.7rem !important;
+  color: #795548 !important;
 }
 </style>

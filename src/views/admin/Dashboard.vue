@@ -1,82 +1,75 @@
 <template>
-  <v-container fluid class="bg-background pa-6">
+  <div class="admin-dashboard">
     <!-- Welcome Header -->
-    <v-row class="mb-4">
-      <v-col cols="12">
-        <h1 class="text-h4 font-weight-bold text-primary">
-          Dashboard Overview
-        </h1>
-        <p class="text-subtitle-1 text-grey">
-          Welcome back, Admin. Here is what's happening today.
-        </p>
-      </v-col>
-    </v-row>
+    <div class="mb-6 px-2">
+      <h1 class="text-h5 font-weight-bold text-primary mb-1">Dashboard Overview</h1>
+      <p class="text-caption text-grey-darken-1">Welcome back, Admin. Here is what's happening today.</p>
+    </div>
 
-    <!-- KPI Metrics Cards -->
-    <v-row>
+    <!-- KPI Metrics Cards - Flat Design -->
+    <v-row dense>
       <v-col cols="12" sm="6" lg="3">
-        <v-card elevation="2" class="rounded-lg border-s-xl border-primary">
-          <v-card-text class="d-flex align-center pa-6">
-            <v-avatar color="primary-lighten-5" size="56" class="mr-4">
-              <v-icon icon="mdi-account-group" color="primary" size="32" />
+        <BaseCard elevation="0" rounded="md" class="border-thin bg-white mb-2" no-padding>
+          <div class="d-flex align-center pa-4">
+            <v-avatar color="primary-lighten-5" size="48" rounded="md" class="mr-3">
+              <v-icon icon="mdi-account-group" color="primary" size="24" />
             </v-avatar>
             <div>
-              <div class="text-overline text-grey">Total Congregation</div>
-              <div class="text-h4 font-weight-bold">
+              <div class="text-overline text-grey-darken-1 line-height-1 mb-1">Congregation</div>
+              <div class="text-h5 font-weight-bold text-primary">
                 {{ memberStore.totalCongregation }}
               </div>
             </div>
-          </v-card-text>
-        </v-card>
+          </div>
+        </BaseCard>
       </v-col>
 
       <v-col cols="12" sm="6" lg="3">
-        <v-card elevation="2" class="rounded-lg border-s-xl border-secondary">
-          <v-card-text class="d-flex align-center pa-6">
-            <v-avatar color="secondary-lighten-5" size="56" class="mr-4">
-              <v-icon icon="mdi-chart-line" color="secondary" size="32" />
+        <BaseCard elevation="0" rounded="md" class="border-thin bg-white mb-2" no-padding>
+          <div class="d-flex align-center pa-4">
+            <v-avatar color="secondary-lighten-5" size="48" rounded="md" class="mr-3">
+              <v-icon icon="mdi-chart-line" color="secondary" size="24" />
             </v-avatar>
             <div>
-              <div class="text-overline text-grey">Active Projects</div>
-              <div class="text-h4 font-weight-bold">
+              <div class="text-overline text-grey-darken-1 line-height-1 mb-1">Active Projects</div>
+              <div class="text-h5 font-weight-bold text-secondary">
                 {{ projectStore.projects.length }}
               </div>
             </div>
-          </v-card-text>
-        </v-card>
+          </div>
+        </BaseCard>
       </v-col>
 
       <v-col cols="12" sm="6" lg="3">
-        <v-card elevation="2" class="rounded-lg border-s-xl border-success">
-          <v-card-text class="d-flex align-center pa-6">
-            <v-avatar color="success-lighten-5" size="56" class="mr-4">
-              <v-icon icon="mdi-currency-usd" color="success" size="32" />
+        <BaseCard elevation="0" rounded="md" class="border-thin bg-white mb-2" no-padding>
+          <div class="d-flex align-center pa-4">
+            <v-avatar color="success-lighten-5" size="48" rounded="md" class="mr-3">
+              <v-icon icon="mdi-currency-usd" color="success" size="24" />
             </v-avatar>
             <div>
-              <div class="text-overline text-grey">Monthly Tithes</div>
-              <div class="text-h4 font-weight-bold">
-                $
-                {{ financeStore.totalContributions.toLocaleString() }}
+              <div class="text-overline text-grey-darken-1 line-height-1 mb-1">Monthly Tithes</div>
+              <div class="text-h5 font-weight-bold text-success">
+                ${{ financeStore.totalContributions.toLocaleString() }}
               </div>
             </div>
-          </v-card-text>
-        </v-card>
+          </div>
+        </BaseCard>
       </v-col>
 
       <v-col cols="12" sm="6" lg="3">
-        <v-card elevation="2" class="rounded-lg border-s-xl border-warning">
-          <v-card-text class="d-flex align-center pa-6">
-            <v-avatar color="warning-lighten-5" size="56" class="mr-4">
-              <v-icon icon="mdi-calendar-clock" color="warning" size="32" />
+        <BaseCard elevation="0" rounded="md" class="border-thin bg-white mb-2" no-padding>
+          <div class="d-flex align-center pa-4">
+            <v-avatar color="warning-lighten-5" size="48" rounded="md" class="mr-3">
+              <v-icon icon="mdi-calendar-clock" color="warning" size="24" />
             </v-avatar>
             <div>
-              <div class="text-overline text-grey">Pending Tasks</div>
-              <div class="text-h4 font-weight-bold">
+              <div class="text-overline text-grey-darken-1 line-height-1 mb-1">Pending Tasks</div>
+              <div class="text-h5 font-weight-bold text-warning">
                 {{ dutyStore.duties.length }}
               </div>
             </div>
-          </v-card-text>
-        </v-card>
+          </div>
+        </BaseCard>
       </v-col>
     </v-row>
 
@@ -84,90 +77,69 @@
     <v-row class="mt-4">
       <!-- Growth Trends -->
       <v-col cols="12" lg="8">
-        <v-card class="rounded-lg h-100" elevation="2">
-          <v-card-title class="d-flex align-center pt-4 px-6">
-            <span>Congregation Growth</span>
-            <v-spacer />
-            <v-btn
-              variant="text"
-              color="primary"
-              density="comfortable"
-              icon="mdi-dots-vertical"
-            />
-          </v-card-title>
-
-          <v-card-text class="pa-6">
-            <v-sheet
-              color="grey-lighten-4"
-              height="300"
-              width="100%"
-              class="d-flex align-center justify-center rounded-lg border-dashed border-thin"
-            >
-              <div class="text-center">
-                <v-icon
-                  icon="mdi-chart-areaspline"
-                  size="64"
-                  color="grey-lighten-1"
-                />
-                <div class="text-grey">
-                  Chart Visualization Integration Area
-                </div>
+        <BaseCard class="h-100 border-thin bg-white" title="Congregation Growth" elevation="0" rounded="md">
+          <v-sheet
+            color="grey-lighten-5"
+            height="320"
+            width="100%"
+            class="d-flex align-center justify-center rounded-md border-dashed border-thin mt-2"
+          >
+            <div class="text-center">
+              <v-icon
+                icon="mdi-chart-areaspline"
+                size="48"
+                color="grey-lighten-2"
+                class="mb-2"
+              />
+              <div class="text-caption text-grey">
+                Growth visualization will appear here
               </div>
-            </v-sheet>
-          </v-card-text>
-        </v-card>
+            </div>
+          </v-sheet>
+        </BaseCard>
       </v-col>
 
       <!-- Recent Activities -->
       <v-col cols="12" lg="4">
-        <v-card class="rounded-lg h-100" elevation="2">
-          <v-card-title class="pt-4 px-6">
-            Recent Activities
-          </v-card-title>
+        <BaseCard class="h-100 border-thin bg-white" title="Recent Activities" elevation="0" rounded="md" no-padding>
+          <v-list density="compact" class="pa-0 bg-transparent">
+            <template v-for="(activity, i) in recentActivities" :key="i">
+              <v-list-item class="py-3 px-4">
+                <template #prepend>
+                  <v-avatar
+                    :color="activity.color + '-lighten-5'"
+                    size="36"
+                    rounded="md"
+                    class="mr-3 border-thin"
+                  >
+                    <v-icon
+                      :icon="activity.icon"
+                      size="18"
+                      :color="activity.color"
+                    />
+                  </v-avatar>
+                </template>
 
-          <v-divider />
+                <v-list-item-title class="text-subtitle-2 font-weight-bold">{{ activity.title }}</v-list-item-title>
+                <v-list-item-subtitle class="text-tiny">{{ activity.time }}</v-list-item-subtitle>
 
-          <v-list lines="two" class="pa-2">
-            <v-list-item
-              v-for="(activity, i) in recentActivities"
-              :key="i"
-              :title="activity.title"
-              :subtitle="activity.time"
-            >
-              <template #prepend>
-                <v-avatar
-                  :color="activity.color"
-                  size="32"
-                  class="mr-3"
-                >
-                  <v-icon
-                    :icon="activity.icon"
-                    size="18"
-                    color="white"
-                  />
-                </v-avatar>
-              </template>
-
-              <template #append>
-                <v-btn
-                  icon="mdi-chevron-right"
-                  variant="text"
-                  size="small"
-                  color="grey"
-                />
-              </template>
-            </v-list-item>
+                <template #append>
+                  <v-icon icon="mdi-chevron-right" size="16" color="grey-lighten-1" />
+                </template>
+              </v-list-item>
+              <v-divider v-if="i < recentActivities.length - 1" class="border-opacity-25 mx-4" />
+            </template>
           </v-list>
 
-          <v-card-actions class="pa-4 pt-0">
-            <v-btn block variant="tonal" color="primary">
-              View All logs
-            </v-btn>
-          </v-card-actions>
-        </v-card>
+          <template #actions>
+            <BaseButton block variant="text" size="small" color="primary">
+              View Activity Log
+            </BaseButton>
+          </template>
+        </BaseCard>
       </v-col>
     </v-row>
-  </v-container>
+  </div>
 </template>
 
 <script setup>
@@ -191,8 +163,19 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.border-s-xl {
-  border-inline-start-width: 6px !important;
-  border-inline-start-style: solid !important;
+.border-thin {
+  border: 1px solid rgba(121, 85, 72, 0.1) !important;
+}
+
+.line-height-1 {
+  line-height: 1;
+}
+
+.text-tiny {
+  font-size: 0.7rem;
+}
+
+.bg-grey-lighten-5 {
+  background-color: #fcfaf7 !important; /* Slightly parchment tinted grey */
 }
 </style>
