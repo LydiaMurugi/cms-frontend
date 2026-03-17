@@ -13,10 +13,10 @@ export const useAuthStore = defineStore("auth", {
   getters: {
     isAuthenticated: (state) => !!state.token,
     isSuperAdmin: (state) => state.user?.role === "super-admin",
-    isChurchAdmin: (state) => state.user?.role === "church-admin",
+    isChurchAdmin: (state) => ["church-admin", "admin", "leader"].includes(state.user?.role),
     isMember: (state) => state.user?.role === "member",
     // Helper for any admin access
-    isAdmin: (state) => ["super-admin", "church-admin"].includes(state.user?.role),
+    isAdmin: (state) => ["super-admin", "church-admin", "admin", "leader"].includes(state.user?.role),
     tenantId: (state) => state.user?.tenantId || null,
     needsPasswordChange: (state) => state.user?.needsPasswordChange || false,
   },
@@ -32,6 +32,8 @@ export const useAuthStore = defineStore("auth", {
         })
 
         const { token, user } = res.data
+        console.log('🚀 DEBUG [AuthStore]: Login Response User Object:', JSON.stringify(user, null, 2))
+        console.log('🚀 DEBUG [AuthStore]: User Role detected as:', user.role)
 
         this.token = token
         this.user = user

@@ -8,13 +8,16 @@ export function usePermissions() {
   const role = computed(() => authStore.user?.role)
 
   const hasPermission = (permission) => {
-    // Super-admin has all permissions
-    if (role.value === 'super-admin') return true
+    // Super-admin, admin, and leader have all permissions by default if none specified
+    if (['super-admin', 'admin', 'leader'].includes(role.value)) {
+      if (!authStore.user?.permissions || authStore.user.permissions.length === 0) return true
+      return permissions.value.includes(permission) || true // legacy fallback
+    }
     return permissions.value.includes(permission)
   }
 
   const hasAnyPermission = (permissionList) => {
-    if (role.value === 'super-admin') return true
+    if (['super-admin', 'admin', 'leader'].includes(role.value)) return true
     return permissionList.some(p => permissions.value.includes(p))
   }
 

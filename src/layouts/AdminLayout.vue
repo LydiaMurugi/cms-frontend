@@ -116,7 +116,7 @@ const currentRouteTitle = computed(() => route.meta.title || 'Admin')
 
 const allNavItems = [
   { title: 'Dashboard', icon: 'mdi-view-dashboard', path: '/admin/dashboard', permission: 'view_dashboard' },
-  { title: 'Churches', icon: 'mdi-office-building-cog', path: '/admin/churches', permission: 'manage_churches' },
+  { title: 'Church Directory', icon: 'mdi-office-building-cog', path: '/admin/churches', permission: 'manage_churches' },
   { title: 'Tasks', icon: 'mdi-clipboard-check', path: '/admin/tasks', permission: 'manage_tasks' },
   { title: 'Member Directory', icon: 'mdi-account-group', path: '/admin/members', permission: 'manage_members' },
   { title: 'Finances', icon: 'mdi-cash-register', path: '/admin/finances', permission: 'manage_finances' },

@@ -10,6 +10,7 @@
           </v-toolbar-title>
           <v-spacer />
           <BaseButton
+            v-if="hasPermission('manage_communications')"
             icon="mdi-plus-circle-outline"
             variant="text"
             color="primary"
@@ -143,7 +144,7 @@
           </v-sheet>
 
           <!-- Input Area -->
-          <v-sheet class="pa-4 border-t bg-white">
+          <v-sheet v-if="hasPermission('manage_communications')" class="pa-4 border-t bg-white">
             <v-row dense align="center">
               <v-col>
                 <v-text-field
@@ -168,6 +169,9 @@
               </v-col>
             </v-row>
           </v-sheet>
+          <v-sheet v-else class="pa-4 border-t bg-white text-center text-caption text-grey">
+            You do not have permission to send messages.
+          </v-sheet>
 
         </template>
 
@@ -180,7 +184,7 @@
           <div class="text-subtitle-1 text-medium-emphasis font-weight-bold">
             Select a conversation to start chatting
           </div>
-          <BaseButton color="primary" variant="tonal" size="small" class="mt-4" rounded="md">
+          <BaseButton v-if="hasPermission('manage_communications')" color="primary" variant="tonal" size="small" class="mt-4" rounded="md">
             Start a new conversation
           </BaseButton>
         </div>
@@ -194,15 +198,19 @@
 import { ref, computed, onMounted } from 'vue'
 import { useCommunicationStore } from '@/stores/communicationStore'
 import { useChatScroll } from '@/composables/useChatScroll'
+import { usePermissions } from '@/composables/usePermissions'
 
 const store = useCommunicationStore()
+const { hasPermission } = usePermissions()
 
 const searchQuery = ref('')
 const newMessage = ref('')
 const chatBox = ref(null)
 
 onMounted(() => {
-  store.loadChats()
+  if (hasPermission('manage_communications')) {
+    store.loadChats()
+  }
 })
 
 useChatScroll(store.messages, chatBox)

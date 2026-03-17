@@ -6,7 +6,7 @@
         <p class="text-caption text-grey-darken-1">Manage all church tenants on the platform</p>
       </div>
       <BaseButton prepend-icon="mdi-plus" to="/admin/churches/register">
-        Add Church
+        Register Church
       </BaseButton>
     </div>
 
@@ -53,7 +53,6 @@
         <v-icon icon="mdi-office-building-off-outline" size="64" color="grey-lighten-2" class="mb-4" />
         <h3 class="text-h6 text-grey">No churches found</h3>
         <p class="text-caption text-grey mb-4">Start by registering your first church tenant.</p>
-        <BaseButton prepend-icon="mdi-plus" to="/admin/churches/register">Register Church</BaseButton>
       </v-col>
     </v-row>
   </div>

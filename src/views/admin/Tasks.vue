@@ -7,6 +7,7 @@
         <p class="text-caption text-grey-darken-1">Assign responsibilities and track leadership reports</p>
       </div>
       <BaseButton
+        v-if="hasPermission('manage_tasks')"
         color="primary"
         prepend-icon="mdi-account-plus"
         size="small"
@@ -90,7 +91,7 @@
 
             <div class="mt-6 d-flex justify-end gap-2">
               <BaseButton
-                v-if="duty.status === 'Pending'"
+                v-if="duty.status === 'Pending' && hasPermission('manage_tasks')"
                 size="x-small"
                 color="primary"
                 variant="tonal"
@@ -183,10 +184,14 @@
 import { ref, computed, onMounted } from 'vue'
 import { useDutyStore } from '@/stores/dutyStore'
 import { useMemberStore } from '@/stores/memberStore'
+import { useAuthStore } from '@/stores/authStore'
+import { usePermissions } from '@/composables/usePermissions'
 import api from '@/plugins/axios'
 
 const dutyStore = useDutyStore()
 const memberStore = useMemberStore()
+const authStore = useAuthStore()
+const { hasPermission } = usePermissions()
 
 const search = ref('')
 const statusFilter = ref('All')
@@ -207,7 +212,9 @@ const newDuty = ref({
 })
 
 onMounted(async () => {
-  await dutyStore.fetchDuties()
+  if (hasPermission('manage_tasks') || hasPermission('view_dashboard')) {
+    await dutyStore.fetchDuties()
+  }
 })
 
 const filteredDuties = computed(() => {
@@ -231,7 +238,11 @@ const getStatusColor = (status) => {
 
 const assignDuty = async () => {
   try {
-    await api.post('/duties', newDuty.value)
+    const payload = {
+      ...newDuty.value,
+      tenantId: authStore.tenantId
+    }
+    await api.post('/duties', payload)
     await dutyStore.fetchDuties()
     showAssignDialog.value = false
     newDuty.value = { title: '', assigned_id: null, date: '', category: '', notes: '' }

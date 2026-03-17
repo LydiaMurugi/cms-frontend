@@ -104,13 +104,21 @@ const handleLogin = async () => {
     return
   }
 
+  console.log('🚀 DEBUG [Login.vue]: Current Auth Store Getters ->', {
+    isAdmin: authStore.isAdmin,
+    isMember: authStore.isMember,
+    role: authStore.user?.role
+  })
+
   // Role-based redirection
   if (authStore.isAdmin) {
+    console.log('🚀 DEBUG [Login.vue]: Routing to /admin/dashboard')
     router.push('/admin/dashboard')
   } else if (authStore.isMember) {
+    console.log('🚀 DEBUG [Login.vue]: Routing to /member/home')
     router.push('/member/home')
   } else {
-    // Fallback safety
+    console.log('🚀 DEBUG [Login.vue]: No role matched, routing to /')
     router.push('/')
   }
 }

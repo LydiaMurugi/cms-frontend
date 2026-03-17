@@ -1,9 +1,18 @@
 <template>
   <div class="church-registration">
     <!-- Header -->
-    <div class="mb-6 px-2">
-      <h1 class="text-h5 font-weight-bold text-primary mb-1">Register New Church</h1>
-      <p class="text-caption text-grey-darken-1">Onboard a new church tenant to the platform</p>
+    <div class="d-flex align-center mb-6 px-2">
+      <BaseButton 
+        variant="text" 
+        icon="mdi-arrow-left" 
+        color="primary" 
+        class="mr-2"
+        to="/admin/churches"
+      />
+      <div>
+        <h1 class="text-h5 font-weight-bold text-primary mb-1">Register New Church</h1>
+        <p class="text-caption text-grey-darken-1">Onboard a new church tenant to the platform</p>
+      </div>
     </div>
 
     <v-stepper v-model="step" :items="['Church Details', 'Admin Account', 'Confirmation']" hide-actions elevation="0" rounded="md" class="border-thin bg-white">
@@ -26,7 +35,8 @@
               </v-col>
             </v-row>
           </v-form>
-          <div class="d-flex justify-end mt-6">
+          <div class="d-flex justify-space-between mt-6">
+            <BaseButton variant="text" to="/admin/churches">Cancel</BaseButton>
             <BaseButton @click="step = 2" :disabled="!isChurchValid">Next Step</BaseButton>
           </div>
         </div>

@@ -17,24 +17,26 @@
         md="6"
         class="text-md-right d-flex justify-md-end ga-3"
       >
-        <v-btn
-          color="success"
-          prepend-icon="mdi-plus"
-          size="large"
-          @click="showAddDialog = true"
-        >
-          Record Tithe
-        </v-btn>
+        <template v-if="hasPermission('manage_finances')">
+          <v-btn
+            color="success"
+            prepend-icon="mdi-plus"
+            size="large"
+            @click="showAddDialog = true"
+          >
+            Record Tithe
+          </v-btn>
 
-        <v-btn
-          color="primary"
-          variant="outlined"
-          prepend-icon="mdi-email-seal-outline"
-          size="large"
-          @click="handleAnnualReport"
-        >
-          Send Annual Reports
-        </v-btn>
+          <v-btn
+            color="primary"
+            variant="outlined"
+            prepend-icon="mdi-email-seal-outline"
+            size="large"
+            @click="handleAnnualReport"
+          >
+            Send Annual Reports
+          </v-btn>
+        </template>
       </v-col>
     </v-row>
 
@@ -166,11 +168,15 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useFinanceStore } from '@/stores/financeStore'
 import { useMemberStore } from '@/stores/memberStore'
+import { useAuthStore } from '@/stores/authStore'
+import { usePermissions } from '@/composables/usePermissions'
 import { CATEGORY_COLORS } from '@/constants/finance'
 
 /* ================= Stores ================= */
 const financeStore = useFinanceStore()
 const memberStore = useMemberStore()
+const authStore = useAuthStore()
+const { hasPermission } = usePermissions()
 
 /* ================= State ================= */
 const showAddDialog = ref(false)
@@ -185,8 +191,10 @@ const newRecord = reactive({
 
 /* ================= Load Data ================= */
 onMounted(async () => {
-  if (!financeStore.titheRecords.length) {
-    await financeStore.fetchContributions()
+  if (hasPermission('view_reports') || hasPermission('manage_finances')) {
+    if (!financeStore.titheRecords.length) {
+      await financeStore.fetchContributions()
+    }
   }
 
   if (!memberStore.members.length) {
@@ -221,6 +229,7 @@ const getCategoryColor = (category) =>
 const saveContribution = async () => {
   const result = await financeStore.recordContribution({
     ...newRecord,
+    tenantId: authStore.tenantId,
   })
 
   if (result.success) {

@@ -7,6 +7,7 @@
         <p class="text-caption text-grey-darken-1">Manage church initiatives and monitor progress</p>
       </div>
       <BaseButton
+        v-if="hasPermission('manage_projects')"
         color="primary"
         prepend-icon="mdi-plus"
         size="small"
@@ -103,7 +104,7 @@
                 <v-spacer />
                 
                 <BaseButton
-                  v-if="column.nextStatus"
+                  v-if="column.nextStatus && hasPermission('manage_projects')"
                   variant="text"
                   size="x-small"
                   color="primary"
@@ -120,10 +121,21 @@
     <!-- Add Project Dialog -->
     <BaseModal v-model="showAddProjectDialog" title="Add New Project" max-width="500">
       <div class="pa-2">
-        <BaseInput label="Project Title" placeholder="e.g. Roof Renovation" />
+        <BaseInput v-model="newProject.title" label="Project Title" placeholder="e.g. Roof Renovation" />
         <v-select
+          v-model="newProject.priority"
           label="Priority"
           :items="['Low', 'Medium', 'High', 'Urgent']"
+          variant="outlined"
+          density="comfortable"
+          rounded="md"
+          color="primary"
+          class="mt-2"
+        />
+        <v-autocomplete
+          v-model="newProject.assignedTo"
+          :items="['Admin', 'Deacon', 'Pastor', 'Volunteer']"
+          label="Assign To"
           variant="outlined"
           density="comfortable"
           rounded="md"
@@ -133,27 +145,52 @@
       </div>
       <template #actions>
         <BaseButton variant="text" @click="showAddProjectDialog = false">Cancel</BaseButton>
-        <BaseButton @click="showAddProjectDialog = false">Create Project</BaseButton>
+        <BaseButton @click="createProject" :loading="projectStore.loading">Create Project</BaseButton>
       </template>
     </BaseModal>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { useProjectStore } from '@/stores/projectStore'
+import { useAuthStore } from '@/stores/authStore'
 import { useRouter } from 'vue-router'
+import { usePermissions } from '@/composables/usePermissions'
 
 const projectStore = useProjectStore()
+const authStore = useAuthStore()
 const router = useRouter()
+const { hasPermission } = usePermissions()
 
 const showAddProjectDialog = ref(false)
+const newProject = reactive({
+  title: '',
+  priority: 'Medium',
+  assignedTo: '',
+})
 
 onMounted(async () => {
-  if (!projectStore.projects.length) {
-    await projectStore.fetchProjects()
+  if (hasPermission('manage_projects') || hasPermission('view_dashboard')) {
+    if (!projectStore.projects.length) {
+      await projectStore.fetchProjects()
+    }
   }
 })
+
+const createProject = async () => {
+  if (!newProject.title) return
+  
+  await projectStore.addProject({
+    ...newProject,
+    status: 'To Do',
+    progress: 0,
+    tenantId: authStore.tenantId
+  })
+  
+  showAddProjectDialog.value = false
+  newProject.title = ''
+}
 
 const columns = [
   {

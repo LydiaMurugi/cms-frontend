@@ -147,9 +147,11 @@
 <script setup>
 import { ref, reactive, computed } from 'vue'
 import { useMemberStore } from '@/stores/memberStore'
+import { useAuthStore } from '@/stores/authStore'
 import { useRouter } from 'vue-router'
 
 const memberStore = useMemberStore()
+const authStore = useAuthStore()
 const router = useRouter()
 
 const form = ref(null)
@@ -200,6 +202,7 @@ const handleRegister = async () => {
         password: formData.password,
         group: formData.group,
         status: 'Active',
+        tenantId: authStore.tenantId, // Explicitly include tenantId
       }
 
       await memberStore.addMember(payload)
