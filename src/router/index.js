@@ -2,6 +2,15 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/authStore.js'
 
 const routes = [
+  {
+    path: '/set-password',
+    name: 'SetPassword',
+    component: () => import('@/views/SetPassword.vue'),
+    meta: { 
+      requiresAuth: false,
+      title: 'Set Your Password'
+    },
+  },
   // ==========================================
   // PUBLIC ROUTES
   // ==========================================

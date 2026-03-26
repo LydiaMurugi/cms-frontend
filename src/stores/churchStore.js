@@ -17,7 +17,7 @@ export const useChurchStore = defineStore('church', {
         return { success: true }
       } catch (err) {
         console.warn('Backend /tenants not found, using empty list for now')
-        this.churches = [] // Fallback to empty list instead of error
+        this.churches = []
         return { success: true }
       } finally {
         this.loading = false
@@ -28,7 +28,6 @@ export const useChurchStore = defineStore('church', {
       this.loading = true
       try {
         const res = await api.post('/tenants/register', churchData)
-        // Add to list if we have it loaded
         if (this.churches.length > 0) {
           this.churches.push(res.data.tenant)
         }
@@ -52,6 +51,20 @@ export const useChurchStore = defineStore('church', {
         return { success: true }
       } catch (err) {
         this.error = err.response?.data?.error || 'Update failed'
+        return { success: false }
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async deleteChurch(id) {
+      this.loading = true
+      try {
+        await api.delete(`/tenants/${id}`)
+        this.churches = this.churches.filter(c => c.id !== id)
+        return { success: true }
+      } catch (err) {
+        this.error = err.response?.data?.error || 'Deletion failed'
         return { success: false }
       } finally {
         this.loading = false

@@ -7,15 +7,19 @@ const api = axios.create({
 })
 
 api.interceptors.request.use((config) => {
-  const stored = localStorage.getItem("churchAuth")
+  const storedStr = localStorage.getItem("churchAuth")
 
-  if (stored) {
-    const { token, user } = JSON.parse(stored)
+  if (storedStr) {
+    const data = JSON.parse(storedStr)
+    const { token, user, managedTenantId } = data
+    
     config.headers.Authorization = `Bearer ${token}`
     
-    // Add Tenant ID to headers if available
-    if (user && user.tenantId) {
-      config.headers['X-Tenant-Id'] = user.tenantId
+    // Priority: 1. Managed Tenant (Impersonation) -> 2. User's Own Tenant
+    const activeTenantId = managedTenantId || (user ? user.tenantId : null)
+    
+    if (activeTenantId) {
+      config.headers['X-Tenant-Id'] = activeTenantId
     }
   }
 

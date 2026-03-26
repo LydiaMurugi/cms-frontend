@@ -126,8 +126,40 @@
               </div>
             </v-expand-transition>
 
+            <!-- Success State / Post-Upload Actions -->
+            <v-expand-transition>
+              <div v-if="success && !uploading" class="mt-8 pa-6 bg-success-lighten-5 rounded-md border-thin border-success text-center">
+                <v-icon icon="mdi-check-circle" color="success" size="48" class="mb-2" />
+                <div class="text-h6 font-weight-bold text-success mb-2">Upload Successful!</div>
+                <p class="text-caption text-grey-darken-1 mb-6">The resource is now available to authorized members.</p>
+                
+                <div class="text-subtitle-2 font-weight-bold mb-4 text-primary">What would you like to do next?</div>
+                <div class="d-flex flex-column gap-2">
+                  <BaseButton 
+                    variant="tonal" 
+                    color="primary" 
+                    prepend-icon="mdi-clipboard-check"
+                    @click="router.push('/admin/tasks')"
+                  >
+                    Assign Related Duties
+                  </BaseButton>
+                  <BaseButton 
+                    variant="tonal" 
+                    color="secondary" 
+                    prepend-icon="mdi-chat-processing"
+                    @click="router.push('/admin/communication')"
+                  >
+                    Notify Target Group
+                  </BaseButton>
+                  <BaseButton variant="text" size="small" class="mt-2" @click="resetForm">
+                    Upload Another Resource
+                  </BaseButton>
+                </div>
+              </div>
+            </v-expand-transition>
+
             <!-- Actions -->
-            <div class="d-flex gap-3 mt-8">
+            <div v-if="!success" class="d-flex gap-3 mt-8">
               <v-spacer />
               <BaseButton variant="text" color="medium-emphasis" @click="resetForm">
                 Clear
@@ -155,6 +187,7 @@
 
 <script setup>
 import { ref, reactive } from 'vue'
+import { useRouter } from 'vue-router'
 import { useResourceStore } from '@/stores/resourceStore'
 import { useMemberStore } from '@/stores/memberStore'
 import { RESOURCE_CATEGORIES } from '@/constants/resourceConstants'
@@ -162,6 +195,7 @@ import { uploadImage } from '@/services/cloudinaryService'
 
 const resourceStore = useResourceStore()
 const memberStore = useMemberStore()
+const router = useRouter()
 
 const form = ref(null)
 const isFormValid = ref(false)
@@ -216,7 +250,7 @@ const submit = async () => {
     
     uploadProgress.value = 100
     success.value = true
-    resetForm()
+    // Do not auto-reset form so we can show post-upload actions
   } catch (error) {
     console.error(error)
     alert('Upload failed. Please check your Cloudinary configuration.')
@@ -226,10 +260,11 @@ const submit = async () => {
 }
 
 const resetForm = () => {
-  form.value.reset()
+  form.value?.reset()
   resource.isPublic = true
   previewUrl.value = null
   file.value = null
+  success.value = false
 }
 </script>
 

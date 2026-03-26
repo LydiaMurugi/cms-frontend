@@ -8,6 +8,7 @@ export const useAuthStore = defineStore("auth", {
     loading: false,
     error: null,
     checked: false,
+    managedTenantId: null, // For Super Admin impersonation
   }),
 
   getters: {
@@ -17,11 +18,27 @@ export const useAuthStore = defineStore("auth", {
     isMember: (state) => state.user?.role === "member",
     // Helper for any admin access
     isAdmin: (state) => ["super-admin", "church-admin", "admin", "leader"].includes(state.user?.role),
-    tenantId: (state) => state.user?.tenantId || null,
+    tenantId: (state) => state.managedTenantId || state.user?.tenantId || null,
     needsPasswordChange: (state) => state.user?.needsPasswordChange || false,
+    isImpersonating: (state) => !!state.managedTenantId,
   },
 
   actions: {
+    setManagedTenant(id) {
+      this.managedTenantId = id
+      // Optionally save to localStorage so it persists on refresh
+      const stored = JSON.parse(localStorage.getItem("churchAuth") || '{}')
+      stored.managedTenantId = id
+      localStorage.setItem("churchAuth", JSON.stringify(stored))
+    },
+
+    stopImpersonating() {
+      this.managedTenantId = null
+      const stored = JSON.parse(localStorage.getItem("churchAuth") || '{}')
+      delete stored.managedTenantId
+      localStorage.setItem("churchAuth", JSON.stringify(stored))
+    },
+
     async login(email, password) {
       try {
         this.loading = true
@@ -126,6 +143,7 @@ export const useAuthStore = defineStore("auth", {
     logout() {
       this.token = null
       this.user = null
+      this.managedTenantId = null
       localStorage.removeItem("churchAuth")
     },
 
@@ -141,6 +159,7 @@ export const useAuthStore = defineStore("auth", {
 
       this.token = data.token
       this.user = data.user
+      this.managedTenantId = data.managedTenantId || null
 
       await this.fetchMe()
     },

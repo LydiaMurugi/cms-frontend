@@ -35,11 +35,11 @@ export const useSettingsStore = defineStore('settings', {
       }
     },
 
-    async saveSettings() {
+    async saveSettings(payload) {
       this.loading = true
       this.error = null
       try {
-        const res = await api.post('/settings', this.settings)
+        const res = await api.post('/settings', payload || this.settings)
         this.settings = res.data
         console.log('Settings saved successfully')
         return { success: true }

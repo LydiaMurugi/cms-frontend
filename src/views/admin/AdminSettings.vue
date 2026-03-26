@@ -2,123 +2,156 @@
   <div class="admin-settings-view">
     <!-- Header -->
     <div class="mb-6 px-2">
-      <h1 class="text-h5 font-weight-bold text-primary mb-1">System Settings</h1>
-      <p class="text-caption text-grey-darken-1">Configure global church parameters and multi-tenant branding</p>
+      <h1 class="text-h5 font-weight-bold text-primary mb-1">
+        {{ isImpersonating || !isSuperAdmin ? 'Church Settings' : 'Platform Settings' }}
+      </h1>
+      <p class="text-caption text-grey-darken-1">
+        {{ isImpersonating || !isSuperAdmin 
+          ? 'Configure branding and parameters for this specific church.' 
+          : 'Configure global system parameters and platform-wide defaults.' 
+        }}
+      </p>
     </div>
 
-    <v-row>
+    <v-row v-if="!hasPermission('manage_settings') && !isSuperAdmin">
+       <v-col cols="12">
+         <v-alert type="warning" variant="tonal" rounded="md">
+           You do not have permission to modify these settings.
+         </v-alert>
+       </v-col>
+    </v-row>
+
+    <v-row v-else>
       <v-col cols="12" lg="8">
-        <!-- Multi-Tenant Branding Section -->
-        <BaseCard elevation="0" rounded="md" class="mb-6 border-thin bg-white" title="Church Branding">
-          <div class="pa-2">
-            <v-row dense>
-              <v-col cols="12" md="6">
-                <BaseInput v-model="settings.churchName" label="Church Name" placeholder="Your Church Name" :disabled="!hasPermission('manage_settings')" />
-              </v-col>
-              <v-col cols="12" md="6">
-                <BaseInput v-model="settings.email" label="Official Email" placeholder="contact@church.com" :disabled="!hasPermission('manage_settings')" />
-              </v-col>
-              
-              <v-col cols="12" class="mt-2">
-                <div class="text-tiny font-weight-bold text-primary text-uppercase mb-2">Theme Primary Color</div>
-                <div class="d-flex align-center gap-4 mb-4">
-                  <v-color-picker 
-                    v-model="settings.primaryColor" 
-                    hide-inputs 
-                    show-swatches 
-                    elevation="0"
-                    width="200"
-                    mode="hex"
-                    :disabled="!hasPermission('manage_settings')"
+        
+        <!-- ========================================== -->
+        <!-- PLATFORM SETTINGS (Super Admin Only) -->
+        <!-- ========================================== -->
+        <template v-if="isSuperAdmin && !isImpersonating">
+          <!-- Platform Identity -->
+          <BaseCard elevation="0" rounded="md" class="mb-6 border-thin bg-white" title="Platform Identity">
+            <div class="pa-2">
+              <v-row dense>
+                <v-col cols="12" md="6">
+                  <BaseInput v-model="settings.churchName" label="Platform Name" placeholder="e.g. ChurchMS Global" />
+                </v-col>
+                <v-col cols="12" md="6">
+                  <BaseInput v-model="settings.email" label="Support Email" placeholder="support@churchms.com" />
+                </v-col>
+              </v-row>
+            </div>
+          </BaseCard>
+
+          <!-- System Controls -->
+          <BaseCard elevation="0" rounded="md" class="mb-6 border-thin bg-white" title="System Controls">
+            <div class="pa-2">
+              <v-row dense>
+                <v-col cols="12">
+                  <v-switch
+                    v-model="settings.maintenanceMode"
+                    label="Global Maintenance Mode"
+                    color="error"
+                    inset
+                    hide-details
+                    class="mb-2"
                   />
-                  <div class="flex-grow-1">
-                    <p class="text-caption text-medium-emphasis">This color will be used for buttons, icons, and highlights across the platform for your members.</p>
-                    <div class="d-flex align-center gap-2 mt-2">
-                      <div :style="{ backgroundColor: settings.primaryColor, width: '24px', height: '24px', borderRadius: '4px', border: '1px solid rgba(0,0,0,0.1)' }"></div>
-                      <span class="text-caption font-weight-bold">{{ settings.primaryColor }}</span>
+                  <p class="text-caption text-grey ml-14">When enabled, all church portals will show a maintenance page. Only Super Admins can log in.</p>
+                </v-col>
+                <v-col cols="12" class="mt-4">
+                  <v-switch
+                    v-model="settings.allowNewRegistrations"
+                    label="Allow Public Signups"
+                    color="success"
+                    inset
+                    hide-details
+                  />
+                </v-col>
+              </v-row>
+            </div>
+          </BaseCard>
+
+          <!-- Global Defaults for New Churches -->
+          <BaseCard elevation="0" rounded="md" class="mb-6 border-thin bg-white" title="Global Church Defaults">
+            <div class="pa-2">
+              <v-row dense>
+                <v-col cols="12" md="6">
+                  <v-select
+                    v-model="settings.defaultCurrency"
+                    :items="CURRENCIES"
+                    label="Default Church Currency"
+                    variant="outlined"
+                    density="comfortable"
+                    rounded="md"
+                  />
+                </v-col>
+                <v-col cols="12" md="6">
+                  <v-select
+                    v-model="settings.defaultLanguage"
+                    :items="['English', 'Spanish', 'French', 'Swahili']"
+                    label="Default System Language"
+                    variant="outlined"
+                    density="comfortable"
+                    rounded="md"
+                  />
+                </v-col>
+              </v-row>
+            </div>
+          </BaseCard>
+        </template>
+
+        <!-- ========================================== -->
+        <!-- CHURCH SETTINGS (Church Admin / Managed) -->
+        <!-- ========================================== -->
+        <template v-else>
+          <!-- Church Branding -->
+          <BaseCard elevation="0" rounded="md" class="mb-6 border-thin bg-white" title="Church Branding">
+            <div class="pa-2">
+              <v-row dense>
+                <v-col cols="12" md="6">
+                  <BaseInput v-model="settings.churchName" label="Church Name" />
+                </v-col>
+                <v-col cols="12" md="6">
+                  <BaseInput v-model="settings.email" label="Official Email" />
+                </v-col>
+                
+                <v-col cols="12" class="mt-2">
+                  <div class="text-tiny font-weight-bold text-primary text-uppercase mb-2">Theme Primary Color</div>
+                  <div class="d-flex align-center gap-4 mb-4">
+                    <v-color-picker v-model="settings.primaryColor" hide-inputs show-swatches elevation="0" width="200" mode="hex" />
+                    <div class="flex-grow-1">
+                      <p class="text-caption text-medium-emphasis">This color defines the look of your specific church portal.</p>
                     </div>
                   </div>
-                </div>
-              </v-col>
+                </v-col>
 
-              <v-col cols="12">
-                <v-file-input
-                  v-if="hasPermission('manage_settings')"
-                  label="Upload Church Logo"
-                  prepend-icon="mdi-camera"
-                  variant="outlined"
-                  density="comfortable"
-                  rounded="md"
-                  color="primary"
-                  @change="uploadLogo"
-                />
-                <v-img
-                  v-if="settings.logoUrl"
-                  :src="settings.logoUrl"
-                  max-height="100"
-                  contain
-                  class="mt-2 rounded-md border-thin bg-grey-lighten-5"
-                />
-              </v-col>
-            </v-row>
-          </div>
-        </BaseCard>
+                <v-col cols="12">
+                  <v-file-input label="Upload Church Logo" prepend-icon="mdi-camera" variant="outlined" density="comfortable" rounded="md" color="primary" @change="uploadLogo" />
+                </v-col>
+              </v-row>
+            </div>
+          </BaseCard>
 
-        <!-- Financial Configuration -->
-        <BaseCard elevation="0" rounded="md" class="mb-6 border-thin bg-white" title="Financial Settings">
-          <div class="pa-2">
-            <v-row dense>
-              <v-col cols="12" md="6">
-                <v-select
-                  v-model="settings.currency"
-                  :items="CURRENCIES"
-                  label="Default Currency"
-                  variant="outlined"
-                  density="comfortable"
-                  rounded="md"
-                  color="primary"
-                  :disabled="!hasPermission('manage_settings')"
-                />
-              </v-col>
-              <v-col cols="12" md="6">
-                <BaseInput v-model="settings.taxId" label="Tax ID / Registration #" :disabled="!hasPermission('manage_settings')" />
-              </v-col>
-              <v-col cols="12">
-                <v-switch
-                  v-model="settings.enableStripe"
-                  label="Enable Online Giving (Stripe)"
-                  color="success"
-                  inset
-                  :disabled="!hasPermission('manage_settings')"
-                />
-                <BaseInput
-                  v-if="settings.enableStripe"
-                  v-model="settings.stripeKey"
-                  type="password"
-                  label="Stripe API Key"
-                  class="mt-2"
-                  :disabled="!hasPermission('manage_settings')"
-                />
-              </v-col>
-            </v-row>
-          </div>
-        </BaseCard>
+          <!-- Financial Settings -->
+          <BaseCard elevation="0" rounded="md" class="mb-6 border-thin bg-white" title="Financial Settings">
+            <div class="pa-2">
+              <v-row dense>
+                <v-col cols="12" md="6">
+                  <v-select v-model="settings.currency" :items="CURRENCIES" label="Currency" variant="outlined" density="comfortable" rounded="md" color="primary" />
+                </v-col>
+                <v-col cols="12" md="6">
+                  <BaseInput v-model="settings.taxId" label="Tax ID / Registration #" />
+                </v-col>
+              </v-row>
+            </div>
+          </BaseCard>
+        </template>
 
         <!-- Actions -->
-        <div v-if="hasPermission('manage_settings')" class="d-flex gap-3 mt-8 px-2">
-          <BaseButton
-            color="primary"
-            size="large"
-            rounded="md"
-            class="px-10"
-            @click="save"
-          >
+        <div class="d-flex gap-3 mt-8 px-2">
+          <BaseButton color="primary" size="large" rounded="md" class="px-10" @click="save">
             Save Changes
           </BaseButton>
           <BaseButton variant="text" color="medium-emphasis">Cancel</BaseButton>
-        </div>
-        <div v-else class="mt-8 px-2 text-caption text-grey italic">
-          You do not have permission to modify system settings.
         </div>
       </v-col>
     </v-row>
@@ -130,15 +163,19 @@
 </template>
 
 <script setup>
-import { ref, onMounted, reactive } from 'vue'
+import { ref, onMounted, reactive, computed } from 'vue'
 import { useSettingsStore } from '@/stores/settingsStore'
+import { useAuthStore } from '@/stores/authStore'
 import { usePermissions } from '@/composables/usePermissions'
 import { CURRENCIES } from '@/constants/settings'
 import api from '@/plugins/axios'
 
 const success = ref(false)
 const settingsStore = useSettingsStore()
-const { hasPermission } = usePermissions()
+const auth = useAuthStore()
+const { hasPermission, isSuperAdmin } = usePermissions()
+
+const isImpersonating = computed(() => auth.isImpersonating)
 
 // Local reactive settings to prevent direct store mutation before save
 const settings = reactive({

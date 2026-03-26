@@ -17,6 +17,21 @@
 
       <v-divider class="border-opacity-25 mx-4" />
 
+      <!-- Impersonation Banner -->
+      <div v-if="isImpersonating" class="pa-4 mx-4 mt-4 bg-error-darken-1 rounded-md text-center">
+        <div class="text-tiny font-weight-bold text-uppercase mb-1">Managing Church</div>
+        <BaseButton 
+          variant="flat" 
+          color="white" 
+          block 
+          size="x-small" 
+          class="text-error font-weight-bold"
+          @click="stopImpersonating"
+        >
+          Exit Mode
+        </BaseButton>
+      </div>
+
       <v-list class="pa-4" density="compact">
         <!-- Navigation Links -->
         <v-list-item
@@ -110,29 +125,57 @@ const router = useRouter()
 const route = useRoute()
 const auth = useAuthStore()
 const notificationStore = useNotificationStore()
-const { hasPermission, role } = usePermissions()
+const { hasPermission, role, isSuperAdmin } = usePermissions()
 
-const currentRouteTitle = computed(() => route.meta.title || 'Admin')
+const isImpersonating = computed(() => auth.isImpersonating)
 
-const allNavItems = [
-  { title: 'Dashboard', icon: 'mdi-view-dashboard', path: '/admin/dashboard', permission: 'view_dashboard' },
-  { title: 'Church Directory', icon: 'mdi-office-building-cog', path: '/admin/churches', permission: 'manage_churches' },
-  { title: 'Tasks', icon: 'mdi-clipboard-check', path: '/admin/tasks', permission: 'manage_tasks' },
-  { title: 'Member Directory', icon: 'mdi-account-group', path: '/admin/members', permission: 'manage_members' },
-  { title: 'Finances', icon: 'mdi-cash-register', path: '/admin/finances', permission: 'manage_finances' },
-  { title: 'Project Board', icon: 'mdi-view-column', path: '/admin/projects', permission: 'manage_projects' },
-  { title: 'Resources', icon: 'mdi-cloud-upload', path: '/admin/resources', permission: 'manage_resources' },
-  { title: 'Reports', icon: 'mdi-chart-areaspline', path: '/admin/reports', permission: 'view_reports' },
-  { title: 'Communication', icon: 'mdi-chat-processing', path: '/admin/communication', permission: 'manage_communications' },
-  { title: 'Settings', icon: 'mdi-cog', path: '/admin/settings', permission: 'manage_settings' },
+// Navigation for Platform Management (Super Admin)
+const superAdminNav = [
+  { title: 'Platform Overview', icon: 'mdi-monitor-dashboard', path: '/admin/dashboard' },
+  { title: 'Church Directory', icon: 'mdi-office-building-cog', path: '/admin/churches' },
+  { title: 'Platform Settings', icon: 'mdi-cog-box', path: '/admin/settings' },
+]
+
+// Navigation for Church Management (Church Admin / Leader)
+const churchAdminNav = [
+  { title: 'Church Dashboard', icon: 'mdi-view-dashboard', path: '/admin/dashboard' },
+  { title: 'Member Directory', icon: 'mdi-account-group', path: '/admin/members' },
+  { title: 'Tasks & Duties', icon: 'mdi-clipboard-check', path: '/admin/tasks' },
+  { title: 'Financials', icon: 'mdi-cash-register', path: '/admin/finances' },
+  { title: 'Project Board', icon: 'mdi-view-column', path: '/admin/projects' },
+  { title: 'Resources', icon: 'mdi-cloud-upload', path: '/admin/resources' },
+  { title: 'Communication', icon: 'mdi-chat-processing', path: '/admin/communication' },
+  { title: 'Reports', icon: 'mdi-chart-areaspline', path: '/admin/reports' },
+  { title: 'Church Settings', icon: 'mdi-cog', path: '/admin/settings' },
 ]
 
 const navItems = computed(() => {
-  return allNavItems.filter(item => {
-    if (!item.permission) return true
-    return hasPermission(item.permission)
+  // If Super Admin is impersonating a church, show church nav
+  if (isSuperAdmin.value && !isImpersonating.value) return superAdminNav
+  
+  // Filter church admin items based on granular permissions if they exist
+  return churchAdminNav.filter(item => {
+    // Basic mapping of path to permission for safety
+    const permissionMap = {
+      '/admin/members': 'manage_members',
+      '/admin/tasks': 'manage_tasks',
+      '/admin/finances': 'manage_finances',
+      '/admin/projects': 'manage_projects',
+      '/admin/resources': 'manage_resources',
+      '/admin/reports': 'view_reports',
+      '/admin/communication': 'manage_communications',
+      '/admin/settings': 'manage_settings',
+    }
+    const reqPermission = permissionMap[item.path]
+    // Super Admin has all permissions in impersonation mode
+    return isSuperAdmin.value || !reqPermission || hasPermission(reqPermission)
   })
 })
+
+const stopImpersonating = () => {
+  auth.stopImpersonating()
+  router.push('/admin/churches')
+}
 
 const handleLogout = () => {
   auth.logout()

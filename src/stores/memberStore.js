@@ -114,6 +114,36 @@ export const useMemberStore = defineStore("members", {
       }
     },
 
+    // Bulk add members
+    async bulkAddMembers(membersList) {
+      this.loading = true
+      const results = {
+        success: [],
+        failed: []
+      }
+
+      for (const member of membersList) {
+        try {
+          const res = await api.post("/users", member)
+          this.members.push(res.data)
+          
+          if (!this.groups.includes(res.data.group)) {
+            this.groups.push(res.data.group)
+          }
+          
+          results.success.push(res.data)
+        } catch (err) {
+          results.failed.push({
+            member,
+            error: err.response?.data?.error || "Connection error"
+          })
+        }
+      }
+
+      this.loading = false
+      return results
+    },
+
     // Update member
     async updateMember(memberId, updates) {
       try {
