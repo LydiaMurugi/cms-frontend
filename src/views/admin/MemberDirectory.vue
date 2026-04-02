@@ -441,6 +441,7 @@ const memberDuties = computed(() => {
     .slice(0, 3)
 })
 
+
 const memberContributions = computed(() => {
   if (!selectedMember.value) return []
   return financeStore.titheRecords
