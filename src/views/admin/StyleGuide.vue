@@ -118,10 +118,8 @@
   </v-container>
 </template>
 
-<script setup>
-import { ref } from 'vue'
-import { ChurchTheme } from '@/constants/theme'
-
-const themeColors = ChurchTheme.colors
+<script setup>import { lightTheme, darkTheme } from '@/constants/theme'
+const themeColors = lightTheme.colors
+const darkThemeColors = darkTheme.colors
 const showModal = ref(false)
 </script>
