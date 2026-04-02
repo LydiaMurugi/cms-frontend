@@ -77,6 +77,28 @@ export const useProjectStore = defineStore("projects", {
       }
     },
 
+    /* FETCH SINGLE PROJECT */
+    async fetchProjectById(projectId) {
+      this.loading = true
+      try {
+        const res = await api.get(`/projects/${projectId}`)
+        
+        // Update the project in the local array if it exists
+        const index = this.projects.findIndex(p => p.id === projectId)
+        if (index !== -1) {
+          this.projects[index] = res.data
+        } else {
+          this.projects.push(res.data)
+        }
+        
+        return { success: true, project: res.data }
+      } catch (err) {
+        return { success: false, error: "Project not found" }
+      } finally {
+        this.loading = false
+      }
+    },
+
     /* CREATE PROJECT */
     async addProject(projectData) {
       try {

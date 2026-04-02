@@ -7,6 +7,7 @@ export function usePermissions() {
   const permissions = computed(() => authStore.user?.permissions || [])
   const role = computed(() => authStore.user?.role)
   const isSuperAdmin = computed(() => role.value === 'super-admin')
+  const isAdmin = computed(() => ['super-admin', 'church-admin', 'admin', 'leader'].includes(role.value))
 
   const hasPermission = (permission) => {
     // Super-admin has all permissions by default
@@ -34,6 +35,7 @@ export function usePermissions() {
     permissions,
     role,
     isSuperAdmin,
+    isAdmin,
     hasPermission,
     hasAnyPermission,
     hasAllPermissions

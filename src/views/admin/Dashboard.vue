@@ -4,8 +4,10 @@
     <div v-else class="church-dashboard">
       <!-- Welcome Header -->
       <div class="mb-6 px-2">
-        <h1 class="text-h5 font-weight-bold text-primary mb-1">Church Dashboard</h1>
-        <p class="text-caption text-grey-darken-1">Welcome back. Here is your church overview.</p>
+        <h1 class="text-h5 font-weight-bold text-primary mb-1">
+          {{ authStore.user?.tenantName || 'Church Dashboard' }}
+        </h1>
+        <p class="text-caption text-grey-darken-1">Welcome back, {{ authStore.user?.name }}. Here is your church overview.</p>
       </div>
 
       <!-- Quick Actions Buttons -->
@@ -200,6 +202,7 @@ import { useMemberStore } from '@/stores/memberStore'
 import { useProjectStore } from '@/stores/projectStore'
 import { useFinanceStore } from '@/stores/financeStore'
 import { useDutyStore } from '@/stores/dutyStore'
+import { useAuthStore } from '@/stores/authStore'
 import { useDashboardData } from '@/composables/useDashboardData'
 import { usePermissions } from '@/composables/usePermissions'
 import SuperAdminDashboard from './SuperAdminDashboard.vue'
@@ -208,6 +211,7 @@ const memberStore = useMemberStore()
 const projectStore = useProjectStore()
 const financeStore = useFinanceStore()
 const dutyStore = useDutyStore()
+const authStore = useAuthStore()
 const router = useRouter()
 const { hasPermission, isSuperAdmin } = usePermissions()
 

@@ -214,12 +214,16 @@ const resource = reactive({
 })
 
 const rules = {
-  required: v => !!v || 'Required',
+  required: v => {
+    if (Array.isArray(v)) return v.length > 0 || 'Required'
+    return !!v || 'Required'
+  }
 }
 
 const handleFilePreview = (newFile) => {
-  if (newFile && newFile[0] && newFile[0].type.startsWith('image/')) {
-    previewUrl.value = URL.createObjectURL(newFile[0])
+  const targetFile = Array.isArray(newFile) ? newFile[0] : newFile
+  if (targetFile && targetFile.type.startsWith('image/')) {
+    previewUrl.value = URL.createObjectURL(targetFile)
   } else {
     previewUrl.value = null
   }
@@ -234,26 +238,41 @@ const submit = async () => {
   const { valid } = await form.value.validate()
   if (!valid) return
 
+  // Standardize file selection (Vuetify 3 v-file-input can return File or File[])
+  const targetFile = Array.isArray(file.value) ? file.value[0] : file.value
+  if (!targetFile) {
+    alert('Please select a valid file.')
+    return
+  }
+
   uploading.value = true
-  uploadProgress.value = 10 // Start progress
+  uploadProgress.value = 10
   
   try {
     // 1. Upload to Cloudinary
-    const cloudinaryUrl = await uploadImage(file.value[0])
-    uploadProgress.value = 70 // Cloudinary done
+    const cloudinaryUrl = await uploadImage(targetFile)
+    
+    if (!cloudinaryUrl) {
+      throw new Error("Cloudinary did not return a valid URL.")
+    }
+
+    uploadProgress.value = 70
     
     // 2. Save to our database via store
-    await resourceStore.uploadResource({ 
+    const result = await resourceStore.uploadResource({ 
       ...resource, 
       url: cloudinaryUrl 
     })
     
-    uploadProgress.value = 100
-    success.value = true
-    // Do not auto-reset form so we can show post-upload actions
+    if (result.success) {
+      uploadProgress.value = 100
+      success.value = true
+    } else {
+      throw new Error(result.error)
+    }
   } catch (error) {
-    console.error(error)
-    alert('Upload failed. Please check your Cloudinary configuration.')
+    console.error('Upload Process Error:', error)
+    alert(`Upload failed: ${error.message || 'Please check your configuration.'}`)
   } finally {
     uploading.value = false
   }
@@ -261,10 +280,17 @@ const submit = async () => {
 
 const resetForm = () => {
   form.value?.reset()
-  resource.isPublic = true
+  Object.assign(resource, {
+    title: '',
+    category: '',
+    description: '',
+    isPublic: true,
+    targetGroup: null,
+  })
   previewUrl.value = null
   file.value = null
   success.value = false
+  uploadProgress.value = 0
 }
 </script>
 

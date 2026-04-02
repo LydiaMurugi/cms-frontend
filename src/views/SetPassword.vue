@@ -63,9 +63,9 @@
               <v-icon icon="mdi-check-decagram" color="success" size="32" />
             </v-avatar>
             <h2 class="text-h6 font-weight-bold text-success mb-2">Account Activated!</h2>
-            <p class="text-body-2 text-grey-darken-1 mb-6">Your password has been set. You can now log in to the member app.</p>
+            <p class="text-body-2 text-grey-darken-1 mb-6">Your password has been set. You can now log in to your dashboard.</p>
             <BaseButton block color="primary" size="large" rounded="md" to="/login">
-              Login to Member App
+              Go to Login
             </BaseButton>
           </div>
         </BaseCard>
@@ -75,12 +75,14 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import axios from 'axios'
+import { useAuthStore } from '@/stores/authStore'
 
 const route = useRoute()
 const router = useRouter()
+const authStore = useAuthStore()
 
 const password = ref('')
 const confirmPassword = ref('')
@@ -111,6 +113,11 @@ const handleSetPassword = async () => {
       token: token,
       password: password.value
     })
+    
+    // 🧹 CRITICAL: Clear any existing sessions (like Super Admin) 
+    // to ensure the next login is clean and role-appropriate.
+    authStore.logout()
+    
     success.value = true
   } catch (err) {
     console.error(err)

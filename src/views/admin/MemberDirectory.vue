@@ -414,11 +414,7 @@ const quickDuty = reactive({
   notes: '',
 })
 
-const availableGroups = computed(() => {
-  const defaultGroups = ['Youth Ministry', 'Womens Guild', 'Mens Fellowship', 'Choir', 'Sunday School', 'Praise & Worship']
-  const storeGroups = memberStore.groups || []
-  return [...new Set([...defaultGroups, ...storeGroups])]
-})
+const availableGroups = computed(() => memberStore.groups)
 
 const {
   searchQuery,
@@ -435,6 +431,7 @@ onMounted(() => {
   memberStore.fetchMembers()
   dutyStore.fetchDuties()
   financeStore.fetchContributions()
+    console.log(memberStore.members[0])
 })
 
 const memberDuties = computed(() => {

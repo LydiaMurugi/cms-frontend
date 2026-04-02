@@ -288,13 +288,7 @@ const formData = reactive({
   group: '',
 })
 
-// Define default groups if none exist in the store
-const defaultGroups = ['Youth Ministry', 'Womens Guild', 'Mens Fellowship', 'Choir', 'Sunday School', 'Praise & Worship']
-
-const availableGroups = computed(() => {
-  const storeGroups = memberStore.groups || []
-  return storeGroups.length > 0 ? storeGroups : defaultGroups
-})
+const availableGroups = computed(() => memberStore.groups)
 
 const rules = {
   required: value => !!value || 'Field is required.',

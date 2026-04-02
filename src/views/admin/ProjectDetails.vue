@@ -72,7 +72,7 @@
           </BaseCard>
 
           <!-- Metrics Grid -->
-          <v-row dense>
+          <v-row dense class="mb-6">
             <v-col cols="6">
               <BaseCard elevation="0" rounded="md" class="pa-4 border-thin bg-white h-100">
                 <p class="text-tiny text-grey-darken-1 font-weight-bold text-uppercase mb-1">Budget</p>
@@ -86,6 +86,56 @@
               </BaseCard>
             </v-col>
           </v-row>
+
+          <!-- Comments Section -->
+          <BaseCard elevation="0" rounded="md" class="pa-6 border-thin bg-white" title="Project Comments">
+            <div class="comments-list mb-6">
+              <div v-if="!project.comments?.length" class="text-center py-8 opacity-50">
+                <v-icon icon="mdi-message-text-outline" size="32" class="mb-2" />
+                <p class="text-caption">No comments yet. Start the conversation!</p>
+              </div>
+              
+              <div v-for="(comment, index) in project.comments" :key="index" class="comment-item d-flex mb-4">
+                <v-avatar color="primary-lighten-5" size="32" rounded="sm" class="mr-3 border-thin mt-1">
+                  <span class="text-tiny text-primary font-weight-bold">{{ comment.user?.charAt(0) || '?' }}</span>
+                </v-avatar>
+                <div class="flex-grow-1 pa-3 bg-grey-lighten-5 rounded-md border-thin">
+                  <div class="d-flex justify-space-between align-center mb-1">
+                    <span class="text-caption font-weight-bold text-primary">{{ comment.user }}</span>
+                    <span class="text-tiny text-grey">{{ formatDate(comment.date) }}</span>
+                  </div>
+                  <div class="text-body-2 text-medium-emphasis">{{ comment.text }}</div>
+                </div>
+              </div>
+            </div>
+
+            <v-divider class="mb-6 border-opacity-25" />
+
+            <div class="add-comment">
+              <v-textarea
+                v-model="newComment"
+                placeholder="Write a comment or update..."
+                variant="outlined"
+                density="comfortable"
+                rounded="md"
+                color="primary"
+                rows="3"
+                hide-details
+                class="mb-3"
+              />
+              <div class="d-flex justify-end">
+                <BaseButton 
+                  color="primary" 
+                  size="small" 
+                  :loading="addingComment" 
+                  :disabled="!newComment.trim()"
+                  @click="handleAddComment"
+                >
+                  Post Comment
+                </BaseButton>
+              </div>
+            </div>
+          </BaseCard>
         </v-col>
 
         <v-col cols="12" md="4">
@@ -100,13 +150,6 @@
               </div>
             </div>
           </BaseCard>
-
-          <BaseCard elevation="0" rounded="md" class="pa-4 border-thin bg-white" title="Project Actions">
-            <div class="d-flex flex-column gap-2 mt-2">
-              <BaseButton variant="tonal" color="primary" block size="small" rounded="md">Edit Details</BaseButton>
-              <BaseButton variant="outlined" color="primary" block size="small" rounded="md">Download Report</BaseButton>
-            </div>
-          </BaseCard>
         </v-col>
       </v-row>
     </template>
@@ -114,20 +157,22 @@
 </template>
 
 <script setup>
-import { computed, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useProjectStore } from '@/stores/projectStore'
+import { useAuthStore } from '@/stores/authStore'
 
 const route = useRoute()
 const router = useRouter()
 const projectStore = useProjectStore()
+const authStore = useAuthStore()
 
 const projectId = route.params.id
+const newComment = ref('')
+const addingComment = ref(false)
 
 onMounted(async () => {
-  if (!projectStore.projects.length) {
-    await projectStore.fetchProjects()
-  }
+  await projectStore.fetchProjectById(projectId)
 })
 
 const project = computed(() => {
@@ -144,6 +189,41 @@ const getPriorityColor = (priority) => {
     Urgent: 'error',
   }
   return map[priority] || 'grey'
+}
+
+const formatDate = (date) => {
+  if (!date) return ''
+  return new Date(date).toLocaleDateString('en-GB', {
+    day: '2-digit',
+    month: 'short',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+}
+
+const handleAddComment = async () => {
+  if (!newComment.value.trim()) return
+  
+  addingComment.value = true
+  try {
+    const comment = {
+      user: authStore.user?.name || 'Admin',
+      text: newComment.value,
+      date: new Date().toISOString()
+    }
+    
+    // Update locally and persist
+    const updatedComments = [...(project.value.comments || []), comment]
+    await projectStore.updateProject(project.value.id, {
+      comments: updatedComments
+    })
+    
+    newComment.value = ''
+  } catch (err) {
+    console.error(err)
+  } finally {
+    addingComment.value = false
+  }
 }
 </script>
 

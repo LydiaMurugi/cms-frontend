@@ -12,6 +12,7 @@ export const useMemberDashboardStore = defineStore("memberDashboard", {
     },
     programs: [],
     resources: [],
+    myDuties: [],
     loading: false,
     error: null,
   }),
@@ -42,6 +43,7 @@ export const useMemberDashboardStore = defineStore("memberDashboard", {
         this.givingSummary = res.data.givingSummary
         this.programs = res.data.programs
         this.resources = res.data.resources
+        this.myDuties = res.data.myDuties || []
 
         return { success: true }
       } catch (err) {

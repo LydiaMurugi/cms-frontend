@@ -88,28 +88,32 @@ export const useFinanceStore = defineStore('finance', {
       })
     },
 
-    monthlyTotals: (state) => {
-      const year = new Date().getFullYear()
+    monthlyTotals: (state) => (months = 6) => {
+      const result = []
+      const now = new Date()
 
-      return Array.from({ length: 12 }, (_, monthIndex) => {
+      for (let i = months - 1; i >= 0; i--) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
+        const monthYear = d.toLocaleString('default', { month: 'short' })
+        const monthIndex = d.getMonth()
+        const year = d.getFullYear()
+
         const total = state.titheRecords
           .filter((r) => {
-            const d = new Date(r.date)
+            const recordDate = new Date(r.date)
             return (
-              d.getFullYear() === year &&
-              d.getMonth() === monthIndex
+              recordDate.getFullYear() === year &&
+              recordDate.getMonth() === monthIndex
             )
           })
           .reduce((sum, r) => sum + Number(r.amount), 0)
 
-        return {
-          month: new Date(year, monthIndex).toLocaleString(
-            'default',
-            { month: 'short' }
-          ),
+        result.push({
+          label: monthYear,
           total,
-        }
-      })
+        })
+      }
+      return result
     },
 
     topContributors: (state) => {
@@ -171,6 +175,8 @@ export const useFinanceStore = defineStore('finance', {
           .reduce((sum, r) => sum + Number(r.amount), 0),
 
     analyticsKPIs() {
+      const contributingMembers = new Set(this.titheRecords.map(r => r.memberId)).size
+      
       return [
         {
           title: 'Total Revenue',
@@ -179,13 +185,13 @@ export const useFinanceStore = defineStore('finance', {
           color: 'primary',
         },
         {
-          title: 'Total Contributions',
+          title: 'Total Records',
           value: this.titheRecords.length,
           icon: 'mdi-cash-multiple',
           color: 'success',
         },
         {
-          title: 'Average Contribution',
+          title: 'Avg. Gift',
           value:
             this.titheRecords.length > 0
               ? Math.round(
@@ -195,6 +201,12 @@ export const useFinanceStore = defineStore('finance', {
               : 0,
           icon: 'mdi-chart-bar',
           color: 'secondary',
+        },
+        {
+          title: 'Contributors',
+          value: contributingMembers,
+          icon: 'mdi-account-group',
+          color: 'info',
         },
       ]
     },

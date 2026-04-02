@@ -34,11 +34,27 @@
         <v-icon v-else icon="mdi-bell-outline" size="22" color="primary" />
       </v-btn>
 
-      <v-btn icon variant="text" class="mr-2" @click="store.goToProfile">
-        <v-avatar size="32" color="primary-lighten-4">
-          <v-icon icon="mdi-account-circle" color="primary" size="24" />
-        </v-avatar>
-      </v-btn>
+      <v-menu location="bottom end" transition="slide-y-transition">
+        <template #activator="{ props }">
+          <v-btn icon variant="text" class="mr-2" v-bind="props">
+            <v-avatar size="32" color="primary-lighten-4">
+              <v-img v-if="authStore.user?.avatar" :src="authStore.user.avatar" />
+              <v-icon v-else icon="mdi-account-circle" color="primary" size="24" />
+            </v-avatar>
+          </v-btn>
+        </template>
+        <v-list density="compact" class="pa-1 rounded-md border-thin mt-2">
+          <v-list-item prepend-icon="mdi-account-outline" title="My Profile" @click="store.goToProfile" rounded="md" />
+          <v-divider class="my-1 border-opacity-25" />
+          <v-list-item 
+            prepend-icon="mdi-logout" 
+            title="Sign Out" 
+            @click="handleLogout" 
+            rounded="md"
+            class="text-error"
+          />
+        </v-list>
+      </v-menu>
     </v-app-bar>
 
     <!-- Content Area - Centered Spread -->
@@ -80,8 +96,17 @@
 
 <script setup>
 import { useMemberUiStore } from '@/stores/memberUiStore'
+import { useAuthStore } from '@/stores/authStore'
+import { useRouter } from 'vue-router'
 
 const store = useMemberUiStore()
+const authStore = useAuthStore()
+const router = useRouter()
+
+const handleLogout = () => {
+  authStore.logout()
+  router.replace('/login')
+}
 </script>
 
 <style scoped>
@@ -147,6 +172,10 @@ const store = useMemberUiStore()
 .uppercase-none {
   text-transform: none !important;
   letter-spacing: 0.01em;
+}
+
+.border-thin {
+  border: 1px solid rgba(121, 85, 72, 0.1) !important;
 }
 
 :deep(.v-btn__overlay) {

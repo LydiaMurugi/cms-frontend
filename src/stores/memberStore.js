@@ -4,7 +4,17 @@ import api from "@/plugins/axios"
 export const useMemberStore = defineStore("members", {
   state: () => ({
     members: [],
-    groups: [],
+    groups: [
+      'Youth Ministry', 
+      'Womens Guild', 
+      'Mens Fellowship', 
+      'Choir', 
+      'Sunday School', 
+      'Praise & Worship',
+      'Ushering',
+      'Media & Tech',
+      'Missions & Outreach'
+    ],
     loading: false,
     error: null,
     searchQuery: "",
@@ -73,14 +83,12 @@ export const useMemberStore = defineStore("members", {
 
         this.members = res.data
 
-        // auto-generate groups from members
-        this.groups = [
-          ...new Set(
-            res.data
-              .map((m) => m.group)
-              .filter((g) => g && g !== "")
-          ),
-        ]
+        // Merge auto-detected groups from members with our pre-defined list
+        const detectedGroups = res.data
+          .map((m) => m.group)
+          .filter((g) => g && g !== "")
+        
+        this.groups = [...new Set([...this.groups, ...detectedGroups])]
 
         return { success: true }
       } catch (err) {

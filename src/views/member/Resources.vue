@@ -3,7 +3,7 @@
     <!-- Page Header - Flat and Centered -->
     <div class="mb-4 px-1">
       <h1 class="text-h5 font-weight-bold text-primary mb-0">Resources</h1>
-      <p class="text-caption text-grey-darken-1">Access sermons, teachings, and spiritual materials.</p>
+      <p class="text-caption text-grey-darken-1">Access sermons, teachings, and spiritual materials for your group.</p>
     </div>
 
     <!-- Search Bar - Minimalist and Compact -->
@@ -37,30 +37,35 @@
       </v-slide-group-item>
     </v-slide-group>
 
-    <!-- Resources List - Minimal Padding & Spread Layout -->
-    <div v-if="filteredResources.length > 0" class="resources-grid">
+    <!-- Loading State -->
+    <div v-if="resourceStore.loading" class="text-center py-12">
+      <v-progress-circular indeterminate color="primary" />
+    </div>
+
+    <!-- Resources List -->
+    <div v-else-if="filteredResources.length > 0" class="resources-grid">
       <BaseCard
         v-for="resource in filteredResources"
         :key="resource.id"
         elevation="0"
         rounded="md"
         class="mb-2 border-thin bg-white overflow-hidden clickable-card"
-        @click="viewResource(resource.id)"
+        @click="viewResource(resource)"
       >
         <div class="d-flex align-center pa-2">
           <!-- Resource Visual -->
           <v-avatar color="secondary-lighten-5" rounded="md" size="44" class="mr-3">
-            <v-icon icon="mdi-book-open-variant" color="secondary" size="18" />
+            <v-icon :icon="getCategoryIcon(resource.category)" color="secondary" size="18" />
           </v-avatar>
 
-          <!-- Text Content - Spread Out Spacing -->
+          <!-- Text Content -->
           <div class="flex-grow-1 min-width-0 py-1">
             <div class="d-flex align-center justify-space-between mb-0">
               <span class="text-overline text-secondary font-weight-bold line-height-1 tiny-text">
                 {{ resource.category }}
               </span>
               <span class="text-caption text-medium-emphasis tiny-text">
-                {{ formatDate(resource.date) }}
+                {{ formatDate(resource.created_at || resource.date) }}
               </span>
             </div>
             
@@ -68,10 +73,8 @@
               {{ resource.title }}
             </h4>
             <div class="d-flex align-center mt-0">
-              <v-icon icon="mdi-account-outline" size="12" color="grey" class="mr-1" />
-              <p class="text-caption text-medium-emphasis text-truncate mb-0 tiny-text">
-                {{ resource.author }}
-              </p>
+              <v-chip v-if="resource.isPublic" size="x-tiny" color="info" variant="tonal" rounded="sm" class="mr-2">Public</v-chip>
+              <v-chip v-else size="x-tiny" color="warning" variant="tonal" rounded="sm" class="mr-2">{{ resource.targetGroup }}</v-chip>
             </div>
           </div>
 
@@ -81,7 +84,7 @@
             size="small"
             rounded="md"
             class="ml-2"
-            @click.stop="viewResource(resource.id)"
+            @click.stop="viewResource(resource)"
           >
             Access
           </BaseButton>
@@ -90,51 +93,47 @@
     </div>
 
     <!-- Empty State -->
-    <template v-else-if="!loading">
-      <BaseCard elevation="0" rounded="md" class="pa-5 text-center border-thin bg-white">
-        <v-icon icon="mdi-library-shelves" size="32" color="grey-lighten-1" class="mb-2" />
-        <h3 class="text-caption font-weight-bold mb-1">No matches found</h3>
-        <p class="text-caption text-medium-emphasis">Try a different search query.</p>
+    <template v-else>
+      <BaseCard elevation="0" rounded="md" class="pa-10 text-center border-thin bg-white">
+        <v-icon icon="mdi-library-shelves" size="48" color="grey-lighten-2" class="mb-3" />
+        <h3 class="text-subtitle-2 font-weight-bold mb-1">No resources found</h3>
+        <p class="text-caption text-medium-emphasis">Check back later for new study guides and materials.</p>
       </BaseCard>
     </template>
 
-    <!-- Resource Viewer Modal - Compact Traditional -->
+    <!-- Resource Viewer Modal -->
     <BaseModal
       v-model="showResourceModal"
       :title="selectedResource?.title"
-      max-width="420px"
+      max-width="480px"
       show-divider
     >
       <div v-if="selectedResource" class="pa-1">
         <v-img
-          :src="selectedResource.image || DEFAULT_CHURCH_IMAGE"
-          height="140"
+          :src="selectedResource.url || DEFAULT_CHURCH_IMAGE"
+          height="180"
           cover
           rounded="md"
-          class="mb-3 border-thin"
+          class="mb-4 border-thin bg-grey-lighten-4"
         >
-          <div v-if="!selectedResource.image" class="fill-height d-flex align-center justify-center">
-            <div class="verse-overlay-modern pa-2 text-center w-100">
-              <span class="verse-text-modern">"Faith comes by hearing"</span>
-            </div>
-          </div>
           <template #placeholder>
-             <div class="d-flex align-center justify-center fill-height bg-grey-lighten-4">
+             <div class="d-flex align-center justify-center fill-height">
                 <v-progress-circular indeterminate color="secondary" size="24" />
              </div>
           </template>
         </v-img>
 
-        <p class="text-body-2 text-medium-emphasis mb-3 line-height-1-4">
-          {{ selectedResource.description }}
+        <div class="text-tiny font-weight-bold text-grey-darken-1 text-uppercase mb-2">About this resource</div>
+        <p class="text-body-2 text-medium-emphasis mb-4 leading-relaxed">
+          {{ selectedResource.description || 'No description available for this spiritual resource.' }}
         </p>
 
-        <div class="d-flex gap-2 flex-wrap mb-1">
+        <div class="d-flex gap-2 flex-wrap mb-2">
           <v-chip size="x-small" color="secondary" variant="tonal" rounded="md">
             {{ selectedResource.category }}
           </v-chip>
-          <v-chip size="x-small" variant="outlined" rounded="md">
-            {{ selectedResource.author }}
+          <v-chip v-if="!selectedResource.isPublic" size="x-small" color="warning" variant="tonal" rounded="md">
+            {{ selectedResource.targetGroup }}
           </v-chip>
         </div>
       </div>
@@ -143,8 +142,6 @@
         <BaseButton
           variant="text"
           color="medium-emphasis"
-          size="small"
-          rounded="md"
           @click="showResourceModal = false"
         >
           Close
@@ -152,12 +149,10 @@
         <BaseButton
           variant="tonal"
           color="secondary"
-          size="small"
-          rounded="md"
-          prepend-icon="mdi-download"
-          @click="downloadResource(selectedResource)"
+          prepend-icon="mdi-open-in-new"
+          @click="openResource(selectedResource)"
         >
-          Download
+          Open Resource
         </BaseButton>
       </template>
     </BaseModal>
@@ -166,104 +161,70 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { DEFAULT_CHURCH_IMAGE } from '@/constants/resourceConstants'
+import { useResourceStore } from '@/stores/resourceStore'
+import { useAuthStore } from '@/stores/authStore'
+import { DEFAULT_CHURCH_IMAGE, RESOURCE_CATEGORIES } from '@/constants/resourceConstants'
 
-const loading = ref(false)
-const error = ref(null)
+const resourceStore = useResourceStore()
+const authStore = useAuthStore()
+
 const searchQuery = ref('')
 const selectedCategory = ref(null)
-const resources = ref([])
 const showResourceModal = ref(false)
 const selectedResource = ref(null)
 
-const categories = ref(['Sermon', 'Teaching', 'Prayer', 'Devotional', 'Testimony'])
-
-// Mock data
-const mockData = [
-  {
-    id: 1,
-    title: 'The Power of Prayer',
-    description: 'A deep dive into the foundations of effective prayer and how it transforms lives.',
-    category: 'Teaching',
-    author: 'Pastor John',
-    date: '2024-01-20',
-    url: 'https://example.com/resources/prayer.pdf',
-  },
-  {
-    id: 2,
-    title: 'Sunday Service - Jan 14',
-    description: 'Full sermon from our Sunday morning service about faith and perseverance.',
-    category: 'Sermon',
-    author: 'Pastor Maria',
-    date: '2024-01-14',
-    url: 'https://example.com/resources/sermon-jan14.mp4',
-  },
-  {
-    id: 3,
-    title: 'Daily Devotional',
-    description: 'Reflections for the third week of January to guide your spiritual journey.',
-    category: 'Devotional',
-    author: 'Rev. James',
-    date: '2024-01-15',
-    url: 'https://example.com/resources/devotional-week3.pdf',
-  },
-  {
-    id: 4,
-    title: 'Testimony: Life Changed',
-    description: 'Inspiring testimony of transformation through faith and God\'s grace.',
-    category: 'Testimony',
-    author: 'Sarah M.',
-    date: '2024-01-18',
-    url: null,
-  },
-  {
-    id: 5,
-    title: 'Prayer for Healing',
-    description: 'Guided prayer session for physical and spiritual healing with scriptural foundation.',
-    category: 'Prayer',
-    author: 'Pastor John',
-    date: '2024-01-19',
-    url: 'https://example.com/resources/prayer-healing.mp3',
-  },
-]
+const categories = RESOURCE_CATEGORIES
 
 onMounted(async () => {
-  loading.value = true
-  try {
-    resources.value = mockData
-  } finally {
-    loading.value = false
-  }
+  await resourceStore.fetchResources()
 })
 
 const filteredResources = computed(() => {
-  return resources.value.filter((resource) => {
+  const userGroup = authStore.user?.group
+  
+  return resourceStore.resources.filter((resource) => {
+    // 1. Enforce Visibility Rules (Senior Standard)
+    const isVisible = resource.isPublic || (userGroup && resource.targetGroup === userGroup)
+    if (!isVisible) return false
+
+    // 2. Search Filter
     const matchesSearch =
-      resource.title.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-      resource.description.toLowerCase().includes(searchQuery.value.toLowerCase())
+      resource.title?.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+      resource.description?.toLowerCase().includes(searchQuery.value.toLowerCase())
+    
+    // 3. Category Filter
     const matchesCategory = !selectedCategory.value || resource.category === selectedCategory.value
+    
     return matchesSearch && matchesCategory
   })
 })
 
-const viewResource = (resourceId) => {
-  const resource = resources.value.find((r) => r.id === resourceId)
-  if (resource) {
-    selectedResource.value = resource
-    showResourceModal.value = true
-  }
+const viewResource = (resource) => {
+  selectedResource.value = resource
+  showResourceModal.value = true
 }
 
-const downloadResource = (resource) => {
+const openResource = (resource) => {
   if (resource.url) {
     window.open(resource.url, '_blank')
   }
 }
 
+const getCategoryIcon = (cat) => {
+  const map = {
+    'Sermon Audio': 'mdi-headphones',
+    'Sermon Notes (PDF)': 'mdi-file-pdf-box',
+    'Study Guide': 'mdi-book-open-page-variant',
+    'Youth Media': 'mdi-play-circle-outline',
+    'Event Photos': 'mdi-image-multiple-outline'
+  }
+  return map[cat] || 'mdi-file-document-outline'
+}
+
 const formatDate = (date) => {
-  if (!date) return 'Unknown'
-  return new Date(date).toLocaleDateString('en-US', {
-    month: 'short', day: 'numeric'
+  if (!date) return 'Recently'
+  return new Date(date).toLocaleDateString('en-GB', {
+    day: '2-digit', month: 'short'
   })
 }
 </script>
@@ -289,9 +250,8 @@ const formatDate = (date) => {
   cursor: pointer;
 }
 
-.clickable-card:active {
-  background-color: #f8fafc;
-  transform: scale(0.99);
+.clickable-card:hover {
+  border-color: rgba(121, 85, 72, 0.3) !important;
 }
 
 .tiny-text {
@@ -299,24 +259,21 @@ const formatDate = (date) => {
   letter-spacing: 0.02em;
 }
 
+.text-x-tiny {
+  font-size: 0.55rem;
+}
+
 .line-height-1 {
   line-height: 1;
 }
 
-.verse-overlay-modern {
-  background: rgba(121, 85, 72, 0.4);
-  backdrop-filter: blur(1px);
-}
-
-.verse-text-modern {
-  font-size: 0.8rem;
-  font-style: italic;
-  font-weight: 700;
-  color: white;
-  text-shadow: 1px 1px 3px rgba(0,0,0,0.6);
+.leading-relaxed {
+  line-height: 1.6;
 }
 
 .min-width-0 {
   min-width: 0;
 }
+
+.gap-2 { gap: 8px; }
 </style>

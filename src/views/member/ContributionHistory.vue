@@ -1,9 +1,21 @@
 <template>
   <div class="contribution-history-view">
     <!-- Page Header - Flat and Centered -->
-    <div class="mb-6 px-2">
-      <h1 class="text-h5 font-weight-bold text-primary mb-1">Contribution History</h1>
-      <p class="text-caption text-grey-darken-1">View your giving history and details.</p>
+    <div class="mb-6 px-2 d-flex justify-space-between align-end">
+      <div>
+        <h1 class="text-h5 font-weight-bold text-primary mb-1">Contribution History</h1>
+        <p class="text-caption text-grey-darken-1">View your giving history and details.</p>
+      </div>
+      <BaseButton 
+        v-if="contributions.length > 0"
+        variant="tonal" 
+        size="x-small" 
+        color="primary" 
+        prepend-icon="mdi-file-pdf-box"
+        @click="downloadGivingStatement"
+      >
+        Download Statement
+      </BaseButton>
     </div>
 
     <!-- Error Alert -->
@@ -15,43 +27,45 @@
     <v-row dense class="mb-6">
       <v-col cols="6">
         <BaseCard elevation="0" rounded="md" class="pa-3 border-thin bg-white h-100">
-          <p class="text-tiny text-medium-emphasis font-weight-bold mb-1">TOTAL GIVEN</p>
-          <h3 class="text-h6 font-weight-bold text-success">{{ totalGiven }}</h3>
+          <p class="text-tiny text-medium-emphasis font-weight-bold mb-1">TOTAL GIVEN ({{ currentYear }})</p>
+          <h3 class="text-h6 font-weight-bold text-success">{{ formatCurrency(memberAnnualTotal) }}</h3>
         </BaseCard>
       </v-col>
 
       <v-col cols="6">
         <BaseCard elevation="0" rounded="md" class="pa-3 border-thin bg-white h-100">
-          <p class="text-tiny text-medium-emphasis font-weight-bold mb-1">GIFTS</p>
+          <p class="text-tiny text-medium-emphasis font-weight-bold mb-1">ALL-TIME GIFTS</p>
           <h3 class="text-h6 font-weight-bold text-primary">{{ contributions.length }}</h3>
         </BaseCard>
       </v-col>
     </v-row>
 
     <!-- Loading State -->
-    <v-progress-linear v-if="loading" indeterminate color="primary" class="mb-4 rounded-pill" height="2" />
+    <div v-if="loading" class="text-center py-12">
+      <v-progress-circular indeterminate color="primary" />
+    </div>
 
     <!-- Contributions List - Mobile Friendly -->
-    <div v-if="contributions.length > 0">
+    <div v-else-if="contributions.length > 0">
       <BaseCard
         v-for="contribution in contributions"
         :key="contribution.id"
         elevation="0"
         rounded="md"
-        class="mb-2 border-thin bg-white no-padding"
+        class="mb-2 border-thin bg-white no-padding hover-shadow transition-all"
       >
         <v-list-item class="py-3 px-4">
           <template #prepend>
-            <v-avatar color="green-lighten-5" rounded="md" size="40" class="mr-3">
-              <v-icon icon="mdi-hand-heart" color="success" size="20" />
+            <v-avatar color="green-lighten-5" rounded="md" size="40" class="mr-1">
+              <v-icon icon="mdi-heart" color="success" size="20" />
             </v-avatar>
           </template>
 
-          <v-list-item-title class="text-subtitle-2 font-weight-bold">
-            {{ contribution.type }}
+          <v-list-item-title class="text-subtitle-2 font-weight-bold text-primary">
+            {{ contribution.category }}
           </v-list-item-title>
           <v-list-item-subtitle class="text-caption">
-            {{ formatDate(contribution.date) }} • {{ contribution.description }}
+            {{ formatDate(contribution.date) }} • {{ contribution.method || 'Online' }}
           </v-list-item-subtitle>
 
           <template #append>
@@ -60,13 +74,13 @@
                 {{ formatCurrency(contribution.amount) }}
               </div>
               <v-chip
-                size="x-small"
-                :color="statusColor(contribution.status)"
-                variant="tonal"
-                rounded="md"
-                class="text-tiny font-weight-bold"
+                size="x-tiny"
+                color="success"
+                variant="flat"
+                rounded="sm"
+                class="text-uppercase font-weight-bold px-2 mt-1"
               >
-                {{ contribution.status }}
+                Verified
               </v-chip>
             </div>
           </template>
@@ -75,15 +89,23 @@
     </div>
 
     <!-- Empty State -->
-    <template v-else-if="!loading">
-      <BaseCard elevation="0" rounded="md" class="pa-10 text-center border-thin bg-white">
-        <v-icon icon="mdi-history" size="48" color="grey-lighten-2" class="mb-3" />
-        <h3 class="text-subtitle-1 font-weight-bold mb-1">No Contributions</h3>
-        <p class="text-caption text-medium-emphasis">
-          You haven't made any contributions yet.
+    <template v-else>
+      <BaseCard elevation="0" rounded="md" class="pa-12 text-center border-thin bg-white">
+        <v-icon icon="mdi-gift-outline" size="48" color="grey-lighten-2" class="mb-3" />
+        <h3 class="text-subtitle-2 font-weight-bold mb-1">No giving history found</h3>
+        <p class="text-caption text-medium-emphasis mb-6">
+          Your contributions to church missions and projects will appear here.
         </p>
+        <BaseButton color="primary" variant="tonal" size="small" to="/member/contribute">
+          Make a Gift
+        </BaseButton>
       </BaseCard>
     </template>
+
+    <!-- Success Snackbar -->
+    <v-snackbar v-model="snackbar" color="info" timeout="3000" rounded="md" elevation="0">
+      Statement generation started...
+    </v-snackbar>
   </div>
 </template>
 
@@ -94,43 +116,27 @@ import { useAuthStore } from '@/stores/authStore'
 
 const financeStore = useFinanceStore()
 const authStore = useAuthStore()
-const contributions = ref([])
+
 const loading = ref(true)
 const error = ref(null)
+const snackbar = ref(false)
+const currentYear = new Date().getFullYear()
 
-// Mock data - replace with API call
-const mockData = [
-  {
-    id: 1,
-    date: '2024-01-15',
-    type: 'Tithe',
-    description: 'Weekly tithe',
-    amount: 100,
-    status: 'Completed',
-  },
-  {
-    id: 2,
-    date: '2024-01-08',
-    type: 'Offering',
-    description: 'Special offering',
-    amount: 50,
-    status: 'Completed',
-  },
-  {
-    id: 3,
-    date: '2024-01-01',
-    type: 'Tithe',
-    description: 'Weekly tithe',
-    amount: 100,
-    status: 'Completed',
-  },
-]
+const contributions = computed(() => {
+  return financeStore.memberContributions(authStore.user?.id) || []
+})
+
+const memberAnnualTotal = computed(() => {
+  return financeStore.memberAnnualTotal(authStore.user?.id) || 0
+})
 
 onMounted(async () => {
   loading.value = true
   error.value = null
   try {
-    contributions.value = mockData
+    if (!financeStore.titheRecords.length) {
+      await financeStore.fetchContributions()
+    }
   } catch (err) {
     error.value = 'Failed to load contribution history'
     console.error(err)
@@ -139,15 +145,11 @@ onMounted(async () => {
   }
 })
 
-const totalGiven = computed(() => {
-  const total = contributions.value.reduce((sum, c) => sum + c.amount, 0)
-  return formatCurrency(total)
-})
-
 const formatDate = (date) => {
-  return new Date(date).toLocaleDateString('en-US', {
+  if (!date) return '—'
+  return new Date(date).toLocaleDateString('en-GB', {
+    day: '2-digit',
     month: 'short',
-    day: 'numeric',
     year: 'numeric',
   })
 }
@@ -159,13 +161,31 @@ const formatCurrency = (amount) => {
   }).format(amount)
 }
 
-const statusColor = (status) => {
-  const colors = {
-    Completed: 'success',
-    Pending: 'warning',
-    Failed: 'error',
-  }
-  return colors[status] || 'primary'
+const downloadGivingStatement = () => {
+  snackbar.value = true
+  // In a real app, this would hit a PDF generation endpoint
+  console.log('Generating annual statement for', authStore.user?.name)
+  
+  // Create a simple CSV download as a "Statement" fallback
+  const headers = ['Date', 'Category', 'Method', 'Amount']
+  const rows = contributions.value.map(c => [
+    c.date,
+    c.category,
+    c.method || 'Online',
+    c.amount
+  ])
+  
+  const csvContent = "data:text/csv;charset=utf-8," 
+    + headers.join(",") + "\n"
+    + rows.map(e => e.join(",")).join("\n")
+
+  const encodedUri = encodeURI(csvContent)
+  const link = document.createElement("a")
+  link.setAttribute("href", encodedUri)
+  link.setAttribute("download", `Giving_Statement_${currentYear}.csv`)
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
 }
 </script>
 
@@ -181,5 +201,14 @@ const statusColor = (status) => {
 
 .text-tiny {
   font-size: 0.65rem;
+}
+
+.text-x-tiny {
+  font-size: 0.55rem;
+}
+
+.hover-shadow:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05) !important;
+  transform: translateY(-1px);
 }
 </style>
