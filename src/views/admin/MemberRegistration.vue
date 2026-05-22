@@ -306,19 +306,33 @@ const handleRegister = async () => {
   loading.value = true
   try {
     const payload = {
+      firstName: formData.firstName,
+      lastName: formData.lastName,
+      first_name: formData.firstName, // Snake case alias
+      last_name: formData.lastName,   // Snake case alias
       name: `${formData.firstName} ${formData.lastName}`,
+      adminName: `${formData.firstName} ${formData.lastName}`, // Church registration alias
       email: formData.email,
+      adminEmail: formData.email, // Church registration alias
       phone: formData.phone,
       group: formData.group,
+      role: 'member',
       status: 'Pending',
       tenantId: authStore.tenantId,
+      tenant_id: authStore.tenantId, // Snake case alias
       sendInvite: true // Backend generates token and sends email
     }
 
-    await memberStore.addMember(payload)
-    inviteSent.value = true
-    snackbarText.value = 'Invitation sent successfully!'
-    snackbar.value = true
+    const res = await memberStore.addMember(payload)
+    
+    if (res.success) {
+      inviteSent.value = true
+      snackbarText.value = 'Invitation sent successfully!'
+      snackbar.value = true
+    } else {
+      console.error('Registration failed:', res.error)
+      alert(res.error || 'Failed to send invite.')
+    }
   } catch (err) {
     console.error(err)
     alert('Failed to send invite. Check if email exists.')
@@ -360,12 +374,20 @@ const handleBulkUpload = async () => {
     }
 
     const membersToInvite = parsedData.map(data => ({
+      firstName: data.firstname || '',
+      lastName: data.lastname || '',
+      first_name: data.firstname || '',
+      last_name: data.lastname || '',
       name: `${data.firstname || ''} ${data.lastname || ''}`.trim(),
+      adminName: `${data.firstname || ''} ${data.lastname || ''}`.trim(),
       email: data.email,
+      adminEmail: data.email,
       phone: data.phone || '',
       group: data.group || 'General',
+      role: 'member',
       status: 'Pending',
       tenantId: authStore.tenantId,
+      tenant_id: authStore.tenantId,
       sendInvite: true
     }))
 

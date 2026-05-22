@@ -163,15 +163,19 @@
 
     <div class="programs-list">
       <BaseCard
-        v-for="program in programStore.upcomingPrograms.slice(0, 3)"
+        v-for="program in prioritizedPrograms.slice(0, 3)"
         :key="program.id"
         elevation="0"
         rounded="md"
         class="mb-4 border-thin bg-white overflow-hidden clickable-card"
+        :class="{ 'featured-border': program.isFeatured }"
         @click="store.viewProgram(program.id)"
       >
         <div class="d-flex align-center">
           <v-img :src="getProgramImage(program)" width="100" height="100" cover>
+            <div v-if="program.isFeatured" class="featured-badge">
+              <v-icon icon="mdi-star" size="10" color="white" />
+            </div>
             <div v-if="!program.image" class="fill-height d-flex align-end justify-center">
               <div class="verse-overlay-modern pa-1 text-center w-100">
                 <span class="verse-text-modern">"The Lord is my shepherd"</span>
@@ -179,9 +183,14 @@
             </div>
           </v-img>
           <div class="pa-4 flex-grow-1 min-width-0">
-            <p class="text-overline text-secondary font-weight-bold mb-0 line-height-1">
-              {{ program.category }}
-            </p>
+            <div class="d-flex align-center justify-space-between mb-1">
+              <p class="text-overline text-secondary font-weight-bold mb-0 line-height-1">
+                {{ program.category }}
+              </p>
+              <v-chip v-if="program.isFeatured" size="x-tiny" color="warning" variant="flat" class="text-white font-weight-bold">
+                FEATURED
+              </v-chip>
+            </div>
             <h4 class="text-subtitle-1 font-weight-bold text-truncate mb-1">
               {{ program.title }}
             </h4>
@@ -263,6 +272,14 @@ const latestResources = computed(() => {
   return resourceStore.resources
     .filter(r => r.isPublic || (userGroup && r.targetGroup === userGroup))
     .slice(0, 6)
+})
+
+const prioritizedPrograms = computed(() => {
+  return [...programStore.programs].sort((a, b) => {
+    if (a.isFeatured && !b.isFeatured) return -1
+    if (!a.isFeatured && b.isFeatured) return 1
+    return 0
+  })
 })
 
 const memberAnnualTotal = computed(() => {
@@ -369,6 +386,24 @@ onMounted(async () => {
 
 .text-tiny {
   font-size: 0.65rem;
+}
+
+.featured-border {
+  border: 1px solid rgba(255, 152, 0, 0.3) !important;
+}
+
+.featured-badge {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background-color: #FF9800;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom-right-radius: 8px;
+  z-index: 1;
 }
 
 .text-x-tiny {

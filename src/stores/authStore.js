@@ -18,8 +18,8 @@ export const useAuthStore = defineStore("auth", {
     isMember: (state) => state.user?.role === "member",
     // Helper for any admin access
     isAdmin: (state) => ["super-admin", "church-admin", "admin", "leader"].includes(state.user?.role),
-    tenantId: (state) => state.managedTenantId || state.user?.tenantId || null,
-    needsPasswordChange: (state) => state.user?.needsPasswordChange || false,
+    tenantId: (state) => state.managedTenantId || state.user?.tenantId || state.user?.tenant_id || null,
+    needsPasswordChange: (state) => state.user?.needsPasswordChange || state.user?.needs_password_change || false,
     isImpersonating: (state) => !!state.managedTenantId,
   },
 

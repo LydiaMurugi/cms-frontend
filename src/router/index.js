@@ -120,6 +120,17 @@ const routes = [
         },
       },
       {
+        path: 'programs',
+        name: 'AdminPrograms',
+        component: () => import('@/views/admin/AdminPrograms.vue'),
+        meta: { 
+          title: 'Program Management',
+          icon: 'mdi-calendar-star',
+          requiresAuth: true,
+          requiresAdmin: true,
+        },
+      },
+      {
         path: 'tasks',
         name: 'AdminTasks',
         component: () => import('@/views/admin/Tasks.vue'),

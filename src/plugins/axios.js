@@ -16,7 +16,7 @@ api.interceptors.request.use((config) => {
     config.headers.Authorization = `Bearer ${token}`
     
     // Priority: 1. Managed Tenant (Impersonation) -> 2. User's Own Tenant
-    const activeTenantId = managedTenantId || (user ? user.tenantId : null)
+    const activeTenantId = managedTenantId || (user ? (user.tenantId || user.tenant_id) : null)
     
     if (activeTenantId) {
       config.headers['X-Tenant-Id'] = activeTenantId

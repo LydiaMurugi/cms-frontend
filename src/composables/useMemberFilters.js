@@ -21,12 +21,13 @@ export function useMemberFilters(memberStore) {
   })
 
   const getStatusColor = status => {
-    switch (status) {
-      case 'Active':
+    const s = status?.toLowerCase()
+    switch (s) {
+      case 'active':
         return 'success'
-      case 'Inactive':
+      case 'inactive':
         return 'error'
-      case 'Pending':
+      case 'pending':
         return 'warning'
       default:
         return 'grey'

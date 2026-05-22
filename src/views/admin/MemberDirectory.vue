@@ -143,7 +143,16 @@
         </template>
 
         <template #item.actions="{ item }">
-          <div v-if="hasPermission('manage_members')" class="d-flex gap-1">
+          <div v-if="hasPermission('manage_members')" class="d-flex gap-1 align-center">
+            <BaseButton
+              v-if="item.status?.toLowerCase() === 'pending'"
+              icon="mdi-email-sync-outline"
+              variant="text"
+              color="warning"
+              size="x-small"
+              @click="resendInvitation(item)"
+              title="Resend Invite"
+            />
             <BaseButton
               icon="mdi-pencil-outline"
               variant="text"
@@ -162,6 +171,14 @@
                 />
               </template>
               <v-list density="compact" class="pa-1 rounded-md border-thin">
+                <v-list-item 
+                  v-if="item.status?.toLowerCase() === 'pending'"
+                  prepend-icon="mdi-email-sync-outline" 
+                  title="Resend Invite" 
+                  @click="resendInvitation(item)"
+                  rounded="md"
+                  class="text-caption font-weight-bold text-warning"
+                />
                 <v-list-item 
                   prepend-icon="mdi-clipboard-check-outline" 
                   title="Assign Duty" 
@@ -523,6 +540,21 @@ const messageMember = (member) => {
     path: '/admin/communication',
     query: { recipients: member.id }
   })
+}
+
+const resendInvitation = async (member) => {
+  try {
+    const res = await memberStore.resendInvite(member.id)
+    if (res.success) {
+      snackbarText.value = `Invitation resent to ${member.email}`
+      successMsg.value = true
+    } else {
+      alert(res.error || 'Failed to resend invitation')
+    }
+  } catch (err) {
+    console.error('Resend invite error:', err)
+    alert('An unexpected error occurred')
+  }
 }
 
 const confirmDelete = (member) => {

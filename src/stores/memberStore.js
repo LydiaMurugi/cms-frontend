@@ -181,6 +181,22 @@ export const useMemberStore = defineStore("members", {
       return await this.updateMember(memberId, { status })
     },
 
+    // Resend invitation
+    async resendInvite(memberId) {
+      this.loading = true
+      try {
+        await api.post(`/users/${memberId}/resend-invite`)
+        return { success: true }
+      } catch (err) {
+        return {
+          success: false,
+          error: err.response?.data?.error || "Failed to resend invite",
+        }
+      } finally {
+        this.loading = false
+      }
+    },
+
     // Delete member
     async deleteMember(memberId) {
       try {

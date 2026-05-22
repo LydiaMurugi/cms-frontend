@@ -140,6 +140,7 @@ const superAdminNav = [
 const churchAdminNav = [
   { title: 'Church Dashboard', icon: 'mdi-view-dashboard', path: '/admin/dashboard' },
   { title: 'Member Directory', icon: 'mdi-account-group', path: '/admin/members' },
+  { title: 'Programs & Events', icon: 'mdi-calendar-star', path: '/admin/programs' },
   { title: 'Tasks & Duties', icon: 'mdi-clipboard-check', path: '/admin/tasks' },
   { title: 'Financials', icon: 'mdi-cash-register', path: '/admin/finances' },
   { title: 'Project Board', icon: 'mdi-view-column', path: '/admin/projects' },
