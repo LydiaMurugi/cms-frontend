@@ -1,8 +1,29 @@
+# Dependencies
 node_modules
+
+# Build output
 dist
 dist-ssr
-*.local
-.env
+
+# Git
 .git
+.gitignore
+.gitattributes
+
+# Editor
 .vscode
+.idea
+*.swp
+*.swo
+
+# Logs
 *.log
+npm-debug.log*
+
+# Environment files — real values injected as build args in Dokploy
+.env
+.env.*
+
+# OS
+.DS_Store
+Thumbs.db
